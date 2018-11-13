@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>精油关联用途一览</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<style>
+			.tb-edit .el-input {
+				display: none
+			}
+			
+			.tb-edit .current-row .el-input {
+				display: block
+			}
+			
+			.tb-edit .current-row .el-input+span {
+				display: none
+			}
+			
+			.tb-edit .current-row .diess1 {
+				display: none
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="healing_attribute_oil">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="10px">
+							<el-form-item required>
+								<el-col :span="5">
+									<el-input v-model="ruleForm.conditionCnName" placeholder="请选择用途" :disabled="true">
+										<el-button slot="append" icon="el-icon-tickets" @click="chooseadd()"></el-button>
+									</el-input>
+								</el-col>
+								<el-col :span="3">
+									<el-form-item prop="orderNumber">
+										<el-input v-model="ruleForm.orderNumber" placeholder="请输入显示序号" :maxlength="2"></el-input>
+									</el-form-item>
+								</el-col>
+								<el-col :span="3">
+									<el-select clearable placeholder="请选择" :data="selectpublicMaster" v-model="recommendLeveladd">
+										<el-option v-for="item in selectpublicMaster" v-model="item.subId" :key="item.subId" :label="item.subName" :value="item.subId">
+										</el-option>
+									</el-select>
+								</el-col>
+								<el-col :span="6">
+									<el-input v-model="description" placeholder="请输入补充说明"></el-input>
+
+								</el-col>
+								<el-col :span="2">
+									<el-button type="primary" icon="el-icon-plus" @click="add()"></el-button>
+								</el-col>
+							</el-form-item>
+						</el-form>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<el-table style="width: 100%" class="tb-edit" :default-sort="{prop: 'index', order: 'ascending'}" border :data="dataTableSource" :header-cell-style="{background:'#eceff5'}" highlight-current-row @row-click="handleCurrentChange">
+							<el-table-column type="index" label="序号"></el-table-column>
+							<el-table-column prop="conditionId" label="用途ID" sortable></el-table-column>
+							<el-table-column prop="orderNumber" label="显示优先顺序" sortable>
+								<template scope="scope">
+									<el-input size="small" v-model="scope.row.orderNumber" @change="handleEdit(scope.$index, scope.row)" :maxlength="2"></el-input>
+									<span>{{scope.row.orderNumber}}</span>
+								</template>
+							</el-table-column>
+							<el-table-column prop="conditionCnName" label="中文名"></el-table-column>
+							<el-table-column prop="conditionCnOtherName" label="中文别名"></el-table-column>
+							<el-table-column prop="conditionEnName" label="英文名"></el-table-column>
+							<el-table-column prop="conditionEnOtherName" label="英文别名"></el-table-column>
+							<el-table-column label="描述及补充说明">
+								<template scope="scope">
+									<el-input size="small" v-model="scope.row.description" @change="handleEdit(scope.$index, scope.row)"></el-input>
+									<span>{{scope.row.description}}</span>
+								</template>
+							</el-table-column>
+							<el-table-column label="星级推荐">
+								<template scope="scope">
+									<el-select clearable placeholder="请选择" :data="selectpublicMaster" v-model="recommendLevel" @change="handleEdit(scope.$index, scope.row)">
+										<el-option v-for="item in selectpublicMaster" v-model="item.subId" :key="item.subId" :label="item.subName" :value="item.subId">
+										</el-option>
+									</el-select>
+									<span class="diess1">{{scope.row.recommendLevelName}}</span>
+								</template>
+							</el-table-column>
+							<el-table-column label="操作">
+								<template scope="scope">
+									<el-button type="danger" icon="el-icon-delete" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<condition-master ref="conmaster" v-on:entervalue="enterByValue"></condition-master>
+		</div>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/healing_attribute_oil.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+	</body>
+
+</html>

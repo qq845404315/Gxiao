@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>用法Master</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+
+	<body>
+		<div id="usagerecipe">
+			<el-row class="tac">
+				<el-col :span="24" v-cloak>
+					<div class="grid-content bg-purple-light">
+						<el-cascader :options="searchOptions" v-model="selectsearchOptionId" :props="props" separator="/" clearable change-on-select filterable placeholder="输入关键词类别"></el-cascader>
+						<el-input v-model="keyword" placeholder="用法关键字" style="width: 300px;" @keyup.enter.native="query"></el-input>
+						<el-button type="primary" v-on:click="query">查询</el-button>
+						<el-button type="primary" id="add" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row class="tac">
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表页面-->
+						<el-table style="width: 100%;" height="750px" border :data="dataTableSource" :default-sort="{prop: 'date', order: 'descending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="articleId" sortable fixed label="文章id"></el-table-column>
+							<el-table-column prop="url" sortable label="文章url"></el-table-column>
+							<el-table-column prop="titleChinese" sortable label="标题"></el-table-column>
+							<el-table-column prop="keywordChineseNames" sortable label="关联的关键词"></el-table-column>
+							<el-table-column label="操作" width="150">
+								<template scope="scope">
+									<el-button size="small" @click="editRow(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+
+			<!--分页的工具-->
+			<el-col :span="24">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+	</body>
+
+</html>

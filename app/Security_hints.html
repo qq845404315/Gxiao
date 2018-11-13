@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>安全提示</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<!--
+                	作者：guxiao
+                	时间：2018-08-27
+                	描述：精油安全提示编辑控制
+                -->
+		
+		<style>
+	.tb-edit .el-input {    display: none}
+	.tb-edit .current-row .el-input {    display: block}
+	.tb-edit .current-row .el-input+span {    display: none}  
+	</style>
+	</head>
+	<body>
+		<div id="Security_hints">
+			<el-row>
+				<!--
+                	作者：guxiao
+                	时间：2018-08-27
+                	描述：上部的增加精油安全提示的部分
+                -->
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+                    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="10px">
+                		<el-form-item required>
+                			<el-col :span="3">
+                				<el-form-item prop="safetyWarningId">
+                					<el-select  clearable placeholder="请选择" :data="safetyWarningselect" v-model="ruleForm.safetyWarningId">
+										<el-option v-for="item in safetyWarningselect" v-model="item.id":key="item.safetyWarningId" :label="item.chineseName" :value="item.safetyWarningId">	
+										</el-option>
+									</el-select>
+								</el-form-item>
+                			</el-col>
+                			<el-col :span="3">
+                				<el-form-item prop="orderNumber">
+									<el-input v-model="ruleForm.orderNumber" placeholder="请输入显示序号" :maxlength="2"></el-input>
+								</el-form-item>
+                			</el-col>
+                			<el-col :span="11">
+                				<el-form-item>
+									<el-input v-model="description" placeholder="请输入补充说明" style="width: 300px;"></el-input>
+									<el-button type="primary" icon="el-icon-plus" @click="add()"></el-button>
+								</el-form-item>
+                			</el-col>
+						</el-form-item>	
+					</el-form>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--
+                        	作者：guxiao
+                        	时间：2018-08-27
+                        	描述：精油安全提示的列表
+                        -->
+						<el-table style="width: 100%" 
+							class="tb-edit"
+							:default-sort="{prop: 'index', order: 'ascending'}" 
+							border 
+							:data="dataTableSource" 
+							:header-cell-style="{background:'#eceff5'}"  highlight-current-row @row-click="handleCurrentChange">
+							<el-table-column type="index" label="序号"></el-table-column>
+							<el-table-column  prop="safetyWarningId" label="安全提示ID" width="120" sortable></el-table-column>
+							<el-table-column  prop="orderNumber" label="显示顺序" width="120" sortable>
+								<template scope="scope">
+				                    <el-input size="small" v-model="scope.row.orderNumber" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)" :maxlength="2"></el-input> 
+				                    <span>{{scope.row.orderNumber}}</span>
+				              	</template>
+							</el-table-column>
+							<el-table-column prop="chineseName" label="中文名" width="120"></el-table-column>
+							<el-table-column prop="englishName" label="英文名"></el-table-column>
+							<el-table-column prop="severityLevel" label="严重等级" width="120" sortable></el-table-column>
+							<el-table-column prop="safetyWarningDescription" label="描述" ></el-table-column>
+							<el-table-column prop="description" label="补充说明" >
+							<template scope="scope">
+				                    <el-input size="small" v-model="scope.row.description" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input> 
+				                    <span>{{scope.row.description}}</span>
+				               </template>
+							</el-table-column>
+							
+							<!--
+                            	作者：guxiao
+                            	时间：2018-08-27
+                            	描述：存放操作按钮的 一列
+                            -->
+							<el-table-column label="操作">
+								<template scope="scope">
+									<el-button type="danger" icon="el-icon-delete" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>	
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/Security_hints.js"></script>
+		<script src="../scripts/main.js" ></script>
+	</body>
+</html>

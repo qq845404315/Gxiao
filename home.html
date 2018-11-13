@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<link rel="SHORTCUT ICON" href="./image/favicon.ico" />
+		<title>精油物语后台管理系统</title>
+		<link rel="stylesheet" href="./css/element-ui.min.css">
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="home" v-cloak>
+			<el-row class="tac">
+				<el-col :span="4">
+					<p style="text-align: center;"><b>{{userinformation.username}}</b></p>
+					<p style="text-align: center;">{{userinformation.realName}}</p>
+					<p style="text-align: center;">{{userinformation.lastLoginDate}}</p>
+				</el-col>
+				<el-col :span="20">
+					<img src="./image/header.png" style=" width: 100% ;height:80px;" />
+				</el-col>
+			</el-row>
+			<el-row class="tac">
+				<el-col :span="4">
+					<!--只支持二级菜单-->
+					<el-menu v-bind:style="{height:contentHeight+ 'px'}" @open="handleOpen" @select="handleSelect" @close="handleClose" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+						<label v-for="navMenu in navMenus">
+								<el-menu-item v-for="item in haveAclList" v-if="navMenu.url!=''&&item.id===navMenu.id" :key="navMenu.url" :data="navMenu" :index="navMenu.id" >
+								<!--<i class= "navMenu.entity.icon"> </i>-->
+								<span slot="title"> {{navMenu.aclName}} </span>
+							</el-menu-item>
+								<el-submenu  v-if="navMenu.childList.length>0&&navMenu.url==''" :key="navMenu.url" :data="navMenu" :index="navMenu.id">
+								<template slot="title" >
+									<!--<i :class="navMenu.entity.icon"> </i>-->
+									<span> {{navMenu.aclName}} </span>
+								</template>
+								<template v-for="item in navMenu.childList" >
+									<el-menu-item v-for="item1 in haveAclList" v-if="item1.id===item.id"  :key="item.url" :data="item" :index="item.id">
+								<!--<i class= "navMenu.entity.icon"> </i>-->
+								<span slot="title"> {{item.aclName}} </span>
+								</el-menu-item>
+								</template>
+							</el-submenu>
+						</label>
+
+					</el-menu>
+				</el-col>
+				<el-col :span="20">
+					<template v-if="contentSrc">
+						<iframe id="content" v-bind:src="contentSrc" v-bind:style="{width:contentWidth,height:contentHeight+ 'px'}" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+					</template>
+					<p style="text-align: center; margin: 0px;">欢迎登录 ！
+						<el-button size="small" @click.native="logout">注销</el-button>
+					</p>
+
+				</el-col>
+			</el-row>
+		</div>
+
+		<script src="./scripts/vue.min.js"></script>
+		<script src="./scripts/element-ui.min.js"></script>
+		<script src="./scripts/jquery-2.1.4.js"></script>
+		<script src="./scripts/axios.min.js"></script>
+		<script src="./scripts/main.js"></script>
+		<script>
+			//提示的显示时间
+			var duration = '1500';
+			var imainHeight = $(document).height() - 110;
+			var homeVue = new Vue({
+				el: '#home',
+				data: {
+					isCollapse: true,
+					contentSrc: "",
+					contentWidth: "100%",
+					contentHeight: imainHeight,
+					navMenus: [],
+					haveAclList: [],
+					userinformation: {
+						username: "",
+						realName: "",
+						lastLoginDate: ""
+					},
+
+				},
+				beforeCreate: function() {
+					var _self = this;
+					axios.get(_self.api.detailmanager)
+						.then(res => {
+							_self.userinformation = res.data.data;
+						})
+						.catch(eor => {
+							console.log(eor);
+						}),
+						axios.get(_self.api.menumanager)
+						.then(response => {
+							_self.navMenus = response.data.data.menuList;
+							_self.haveAclList = response.data.data.haveAclList
+						})
+						.catch(error => {
+							console.log(error);
+						})
+//					this.$notify({
+//						title: '欢迎登录！',
+//						message : '',
+//						duration: duration,
+//						showClose: false
+//					});
+				},
+				methods: {
+					handleSelect(key, keyPath) {
+						var _self = this;
+//						console.log(key, keyPath)
+						for(var i = 0; i < _self.haveAclList.length; i++) {
+							if(key === _self.haveAclList[i].id) {
+								this.contentSrc = _self.haveAclList[i].url;
+							}
+						}
+					},
+					handleOpen(key, keyPath) {
+						//	console.log(key, keyPath);
+					},
+					handleClose(key, keyPath) {
+						//	console.log(key, keyPath);
+					},
+					logout() {
+						let that = this;
+						this.$confirm("确认退出吗?", "提示", {
+								confirmButtonClass: "el-button--warning"
+							})
+							.then(() => {
+								//确认
+								that.loading = true;
+								localStorage.removeItem("token");
+								localStorage.removeItem("id");
+								axios.get(that.api.logout)
+									.then((res) => {
+										that.$message.error({
+											showClose: true,
+											message: res.message,
+											duration: 2000
+										});
+									})
+								parent.location.href = "login.html";
+							})
+							.catch(() => {
+								console.log("取消注销");
+							});
+					},
+				}
+
+			})
+		</script>
+	</body>
+
+</html>

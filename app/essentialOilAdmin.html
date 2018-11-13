@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>单方精油一览</title>
+		<style>
+			#picdialog .el-dialog__body {
+				height: 600px;
+			}
+			.container {
+				width: 500px;
+				height:500px;
+				border: 1px solid #000;
+				float: left;
+			}
+			
+			.preview {
+				width: 200px;
+				height: 200px;
+				float: left;
+				border: 1px  #000;
+				margin-left: 100px;
+			}
+			
+			.el-tag+.el-tag {
+				margin-left: 10px;
+			}
+			
+			.button-new-tag {
+				margin-left: 10px;
+				height: 32px;
+				line-height: 30px;
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+			
+			.input-new-tag {
+				width: 90px;
+				margin-left: 10px;
+				vertical-align: bottom;
+			}
+			/* .el-upload--picture-card{
+		display: none;
+	} */
+			
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<link rel="stylesheet" href="../css/cropper.css">
+	</head>
+
+	<body>
+
+		<div id="oilAdmin">
+			<el-row>
+				<el-col class="toolbar">
+					<el-form :inline="true" @submit.native.prevent>
+						<el-form-item>
+							<el-tooltip class="item" effect="dark" content="输入精油ID或精油名称(精油中文名称、中文别名、英文名称、英文别名、植物名称-拉丁文、植物名称-拉丁别名)进行模糊查询">
+								<el-input placeholder="查询条件输入框" @keyup.enter.native="query()" v-model="keyword"></el-input>
+							</el-tooltip>
+						</el-form-item>
+						<el-form-item v-cloak>
+							<el-button type="primary" v-on:click="query()">查询</el-button>
+						</el-form-item>
+						<el-form-item v-cloak>
+							<el-button type="primary" @click="add">新增</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+
+			<el-row>
+				<el-col :span="24" fixed>
+					<div>
+						<!--列表-->
+						<el-table style="width: 100%" append-to-body :max-height="contentHeight" border v-loading="loading" :data="dataTableSource" :default-sort="{prop: 'date', order: 'descending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column type="index" fixed style="width: 5%;" sortable label="序号"></el-table-column>
+							<el-table-column prop="oilId" label="精油ID" sortable></el-table-column>
+							<el-table-column prop="oilChineseName" label="中文名" sortable></el-table-column>
+							<el-table-column prop="oilChineseOtherName" label="中文别名" sortable></el-table-column>
+							<el-table-column prop="oilEnglishName" label="英文名" sortable></el-table-column>
+							<el-table-column prop="oilEnglishOtherName" label="英文别名" sortable></el-table-column>
+							<el-table-column prop="oilBotanicalName" label="拉丁名" sortable></el-table-column>
+							<el-table-column prop="oilBotanicalOtherName" label="拉丁别名" sortable></el-table-column>
+							<el-table-column label="操作" width="180">
+								<template slot-scope="scope">
+									<el-button size="small" @click="getEdit(scope.$index,scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" style="margin-left: 0;margin-top: 10px" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+							<el-table-column label="其他信息更新" width="480">
+								<template slot-scope="scope" class="back">
+									<el-button size="small" type="primary" plain @click="chemicalMaster(scope.row)" style="margin: 10px 0">化学成分</el-button>
+									<el-button size="small" type="primary" plain @click="bodyOil(scope.row)" style="margin:10px;">身体系统</el-button>
+									<el-button size="small" type="primary" plain @click="SecurityHints(scope.row)" style="margin-left:0;">安全提示</el-button>
+									<el-button size="small" type="primary" style="margin-left:0;" @click="therapeuticAttributes(scope.row)" plain>疗愈属性</el-button>
+									<el-button size="small" type="primary" style="margin-left:10px;" plain @click="healing_attribute_oil(scope.row)">用途</el-button>
+									<el-button size="small" type="primary" style="margin-left:10px;" plain @click="otherKeyOil(scope.row)">关键词</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+
+			<!--分页的工具-->
+			<el-col :span="24" fixed class="oilAdmin">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+
+		<!--新增/编辑的页面-->
+		<el-dialog :title="statusName" :visible.sync="getEditVisible" :close-on-click-modal="false" id="dialogEdit" v-cloak width="70%">
+			<el-form :model="editForm" label-width="160px" :rules="editFormRules" ref="editForm">
+				<el-form-item label="精油ID">
+					<el-input v-model="editForm.oilId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="精油中文名称" prop="oilChineseName">
+					<el-input v-model="editForm.oilChineseName"></el-input>
+				</el-form-item>
+				<el-form-item label="中文别名">
+					<el-tag :key="tag2" v-for="tag2 in dynamicTags2" closable :disable-transitions="false" @close="handleClosetag2(tag2)">{{tag2}}</el-tag>
+					<el-input class="input-new-tag2" v-if="inputVisible2" v-model="inputValue2" ref="saveTagInput2" size="small" @keyup.enter.native="handleInputConfirm2" @blur="handleInputConfirm2"></el-input>
+					<el-button v-else class="button-new-tag2" size="small" @click="showInput2">+ 中文别名</el-button>
+				</el-form-item>
+				<el-form-item label="英文名称" prop="oilEnglishName">
+					<el-input v-model="editForm.oilEnglishName"></el-input>
+				</el-form-item>
+				<el-form-item label="英文别名">
+					<el-tag :key="tag" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="handleClosetag(tag)">{{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput">+ 请输入英文别名</el-button>
+				</el-form-item>
+				<el-form-item label="植物名称-拉丁文" prop="oilBotanicalName">
+					<el-input v-model="editForm.oilBotanicalName"></el-input>
+				</el-form-item>
+				<el-form-item label="植物名称-拉丁别名">
+					<el-tag :key="tag1" v-for="tag1 in dynamicTags1" closable :disable-transitions="false" @close="handleClosetag1(tag1)">{{tag1}}</el-tag>
+					<el-input class="input-new-tag1" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1"></el-input>
+					<el-button v-else class="button-new-tag1" size="small" @click="showInput1">+ 植物名称-拉丁别名</el-button>
+				</el-form-item>
+				<el-form-item label="植物科别">
+					<el-select placeholder="请选择" filterable :data="selecteditOne" v-model="editForm.plantFamilyId" @change="selectChangeOne()" clearable>
+						<el-option v-for="item in selecteditOne" v-model="item.id" :key="item.plantFamilyId" :label="item.chineseName" :value="item.plantFamilyId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="植物属别">
+					<el-select v-model="editForm.plantGenusId" filterable placeholder="请选择" :data="selecteditTwo" clearable>
+						<el-option v-for="items in selecteditTwo" v-model="items.id" :key="items.plantGenusId" :label="items.chineseName" :value="items.plantGenusId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="萃取植物的部位">
+					<el-select v-model="editForm.plantPartId" placeholder="请选择" :data="editForm1.plantPartList" clearable>
+						<el-option v-for="items in editForm1.plantPartList" v-model="items.id" :key="items.plantPartId" :label="items.chineseName" :value="items.plantPartId">
+							{{items.chineseName + '|' + items.englishName}}
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="萃取方式">
+					<el-select v-model="editForm.extractionMethodId" placeholder="请选择" :data="editForm1.extractionMethodList" clearable>
+						<el-option v-for="items in editForm1.extractionMethodList" v-model="items.id" :key="items.extractionMethodId" :label="items.chineseName" :value="items.extractionMethodId">
+							{{items.chineseName + '|' + items.englishName }}
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="可否用于香薰">
+					<el-switch v-model="editForm.aromatically" active-color="#13ce66" active-value="1" inactive-value="0" inactive-color="#ff4949">
+					</el-switch>
+				</el-form-item>
+				<el-form-item label="可否用于局部涂抹">
+					<el-switch v-model="editForm.topically" active-color="#13ce66" active-value="1" inactive-value="0" inactive-color="#ff4949">
+					</el-switch>
+				</el-form-item>
+				<el-form-item label="可否用于内服">
+					<el-switch v-model="editForm.internally" active-color="#13ce66" active-value="1" inactive-value="0" inactive-color="#ff4949">
+					</el-switch>
+				</el-form-item>
+				<el-form-item label="致敏性">
+					<el-select v-model="editForm.dilutionLevel" placeholder="请选择" :data="editForm1.dilutionLevelList" clearable>
+						<el-option v-for="items in editForm1.dilutionLevelList" v-model="items.subId" :key="items.dilutionLevel" :label="items.subName" :value="items.dilutionLevel">
+							{{items.subName}}
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="光敏性">
+					<el-select v-model="editForm.avoidSunlightLevel" placeholder="请选择" :data="editForm1.avoidSunlightLevelList" clearable>
+						<el-option v-for="items in editForm1.avoidSunlightLevelList" v-model="items.subId" :key="items.avoidSunlightLevel" :label="items.subName" :value="items.avoidSunlightLevel">
+							{{items.subName}}
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<!-- <el-form-item label="精油的气味描述">
+					<el-input v-model="editForm.aromaticDescription"></el-input>
+				</el-form-item> -->
+				<el-form-item label="精油的气味描述">
+					<el-tag :key="tag4" v-for="tag4 in dynamicTags4" closable :disable-transitions="false" @close="handleClosetag4(tag4)">
+						{{tag4}}
+					</el-tag>
+					<el-input class="input-new-tag4" v-if="inputVisible4" v-model="inputValue4" ref="saveTagInput4" size="small" @keyup.enter.native="handleInputConfirm4" @blur="handleInputConfirm4">
+					</el-input>
+					<el-button v-else class="button-new-tag4" size="small" @click="showInput4">+ 请输入精油的气味描述</el-button>
+				</el-form-item>
+				<el-form-item label="香气音调">
+					<el-select v-model="editForm.aromaticToneId" placeholder="请选择" :data="editForm1.aromaticToneList" clearable>
+						<el-option v-for="items in editForm1.aromaticToneList" v-model="items.subId" :key="items.aromaticToneId" :label="items.subName" :value="items.aromaticToneId"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="气味强度">
+					<el-input-number v-model="editForm.aromaticStrengthLevel" :min="0" :max="5"></el-input-number>
+				</el-form-item>
+				<el-form-item label="粘稠度">
+					<el-input-number v-model="editForm.consistencyLevel" :min="0" :max="3"></el-input-number>
+				</el-form-item>
+				<el-form-item label="精油颜色描述" prop="colorDescription">
+					<el-input v-model="editForm.colorDescription"></el-input>
+				</el-form-item>
+				<el-form-item label="美国FDA认证标志">
+					<el-select v-model="editForm.fda" multiple placeholder="请选择" :data="options" clearable>
+						<el-option v-for="item in options" :key="item.subId" v-model="item.subId" :label="item.subName" :value="item.subId"></el-option>
+					</el-select>
+				</el-form-item>
+				<!-- <el-form-item label="主要产地">
+					<el-input v-model="editForm.origin"></el-input>
+				</el-form-item> -->
+
+				<el-form-item label="主要产地">
+					<el-tag :key="tag3" v-for="tag3 in dynamicTags3" closable :disable-transitions="false" @close="handleClosetag3(tag3)">{{tag3}}</el-tag>
+					<el-input class="input-new-tag3" v-if="inputVisible3" v-model="inputValue3" ref="saveTagInput3" size="small" @keyup.enter.native="handleInputConfirm3" @blur="handleInputConfirm3"></el-input>
+					<el-button v-else class="button-new-tag3" size="small" @click="showInput3">+ 请输入主要产地</el-button>
+				</el-form-item>
+				<el-form-item label="植物形态">
+					<el-input autosize v-model="editForm.plantForm" type="textarea"></el-input>
+				</el-form-item>
+				<el-form-item label="历史">
+					<el-input autosize v-model="editForm.history" type="textarea"></el-input>
+				</el-form-item>
+				<el-form-item label="特点描述" prop="description">
+					<el-input autosize v-model="editForm.description" type="textarea"></el-input>
+				</el-form-item>
+				<el-form-item label="植物压缩文件">
+					<el-upload :action="uploadUrl()" list-type="picture-card" :limit="1" :file-list="fileListData" :on-exceed="chooseImg1" :on-remove="handleRemove" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload" class="uploadedit">
+						<i class="el-icon-plus"></i>
+					</el-upload>
+					<el-dialog :visible.sync="dialogVisible" width="80%" id="picdialog">
+						<div class="container">
+							<el-input type="file" id="file" @change="picdemo(file)"></el-input>
+							<img src="" alt="" id="img">
+						</div>
+						<div class="preview">
+							<img src="" alt="" id="imga">
+						</div>
+						<el-button @click="resetcropper()">重置图片</el-button>
+						<el-button @click="cropperdemo()" :loading="picloading">上传图片</el-button>
+					</el-dialog>
+					<el-button @click="picupload">上传图片窗口</el-button>
+				</el-form-item>
+				<el-form-item label="创建时间">
+					<el-input v-model="editForm.gmtCreate" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="修改时间">
+					<el-input v-model="editForm.gmtModified" :disabled="true"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf1('editForm')">取消</el-button>
+				<el-button type="primary" @click="submit('editForm')">提交</el-button>
+			</div>
+		</el-dialog>
+
+		<!--成分页面的操作-->
+		<el-dialog width="80%" :visible.sync="getVisible" :close="handleClose" :close-on-click-modal="false" id="dialogFrame" @close="handleClose()">
+			<template slot="title" style="color: #F56C6C;">
+				<center>{{oilNames1}}</center>
+				{{oilNames}}
+			</template>
+			<iframe id="content" v-bind:src="contentSrc" style="width: 100%;height: 800px;" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/cropper.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/essentialOilAdmin.js"></script>
+
+	</body>
+
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>富文本</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<link rel="stylesheet" href="../css/cropper.css">
+		<style type="text/css">
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+			
+			.el-form-item__label {
+				margin-right: 20px;
+			}
+			
+			.picbutton {
+				margin-left: 30px;
+			}
+			
+			.container {
+				width: 500px;
+				height: 500px;
+				border: 1px solid #000;
+				float: left;
+			}
+			
+			.preview {
+				width: 350px;
+				height: 130px;
+				float: left;
+				border: 1px solid #000;
+				margin-left: 100px;
+			}
+			
+			#picdialog .el-dialog .el-dialog__body {
+				height: 600px;
+			}
+			
+			.audioclass {
+				float: left;
+			}
+			
+			.upload-demo {
+				float: left;
+				margin-left: 50px;
+			}
+			
+			.el-form-item__label {
+				padding-top: 20px;
+			}
+			
+			.el-form-item__content {
+				padding-top: 20px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="dataList" v-cloak>
+			<el-row>
+				<el-col class="toolbar">
+					<el-form :inline="true" @submit.native.prevent>
+						<el-form-item>
+							<el-input placeholder="请输入关键字" @keyup.enter.native="query()" v-model="keyword"></el-input>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" v-on:click="query()">查询</el-button>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" @click="add()">新增</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col>
+					<div class="grid-content">
+						<!--
+                        	作者：845404315@qq.com
+                        	时间：2018-11-07
+                        	描述：内部文章管理
+                        -->
+						<el-table style="width: 100%;" :max-height="contentHeight" border v-loading="loading" :data="dataTableSource" :default-sort="{prop: 'textId', order: 'ascending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="textId" label="文本ID" sortable></el-table-column>
+							<el-table-column prop="title" label="标题" sortable></el-table-column>
+							<el-table-column sortable label="封面图片">
+								<template slot-scope="scope" v-if="scope.row.coverPictureUrl!=null">
+									<img :src="getimgurl(scope.row)" min-width="70" height="70" />
+								</template>
+							</el-table-column>
+							<el-table-column label="音频显示" sortable width="350">
+								<template slot-scope="scope">
+									<span v-if="scope.row.vioceTitle!=null" style="display: block; text-align: center;">{{scope.row.vioceTitle}}</span>
+									<audio type="audio/MP3" controls v-if="scope.row.voiceUrl!=null" :src="getaudiourl(scope.row)">
+										您的浏览器不支持 audio 标签。
+									</audio>
+								</template>
+							</el-table-column>
+							<el-table-column prop="keywordChineseNames" label="内部富文本关联的关键词" sortable></el-table-column>
+							<el-table-column label="操作">
+								<template slot-scope="scope">
+									<el-button size="small" @click="getueditorEdit(scope.$index,scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" style="margin-left: 0;margin-top: 10px" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+
+			<!--分页的工具-->
+			<el-col :span="24" fixed class="multipleOil">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="getEditVisible" append-to-body :close-on-click-modal="false" width="80%" id="ueditor" @close="offdialog()" v-cloak>
+			<el-form label-width="80px">
+				<el-form-item label="文本ID" v-show="distextid">
+					<el-input style="width: 300px;" v-model="data.textId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="标题">
+					<el-input style="width: 300px;" v-model="data.title" ref="input1"></el-input>
+				</el-form-item>
+				<el-form-item label="封面">
+					<img :src="getimgurl()" min-width="70" height="70"></img>
+					<el-button class="picbutton" @click="picupload">上传封面图片（可剪切）</el-button>
+				</el-form-item>
+				<el-form-item label="音频标题">
+					<el-input style="width: 300px;" v-model="data.vioceTitle"></el-input>
+				</el-form-item>
+				<el-form-item label="音频">
+					<audio id="audio" controls class="audioclass" :src="getaudiourl()">
+						您的浏览器不支持 audio 标签。
+					</audio>
+					<el-upload class="upload-demo" action="" :before-upload="beforeadMusicUpload">
+						<el-button size="small" type="primary">上传音频</el-button>
+					</el-upload>
+				</el-form-item>
+				<el-form-item label="关键字">
+					<el-select placeholder="请选择" :data="selecteditOne" v-model="data.selectKeywordObj">
+						<el-option v-for="(item,index) in selecteditOne" v-model="item.keywordTypeId" :key="item.keywordTypeId" :label="item.keywordTypeName" :value="item.keywordTypeId">
+						</el-option>
+					</el-select>
+					<el-button type="primary" icon="el-icon-plus" @click="addInput(selecteditOne[data.selectKeywordObj-1])"></el-button>
+					<el-form-item v-for="(item,index) in addSelect" :label="item.keywordTypeName" :label-width="'82px'">
+						<el-input placeholder="请选择内容" v-model="item.keywordChineseName" :disabled="true" style="width:217px;"></el-input>
+						<template v-if="item.keywordChineseName==null||item.keywordChineseName==''">
+							<el-button size="small" @click="chooseadd(item.keywordTypeId)" icon="el-icon-tickets" style="height:40px;">请选择</el-button>
+						</template>
+						<el-button type="primary" icon="el-icon-minus" @click="removeInput(index)"></el-button>
+					</el-form-item>
+			</el-form>
+			<script id="editor" name="content" type="text/plain"></script>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="closeDialog1(data)">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+			<el-dialog :visible.sync="dialogVisible" width="80%" id="picdialog" @close="resetcropper(type=1)" class="picidea">
+				<div class="container">
+					<el-input type="file" id="file" @change="picdemo(file)"></el-input>
+					<img src="" alt="" id="img">
+				</div>
+				<div class="preview">
+					<img src="" alt="" id="imga">
+				</div>
+				<el-button @click="resetcropper()">重置图片</el-button>
+				<el-button @click="cropperdemo()">上传图片</el-button>
+			</el-dialog>
+			<!--引用组件的页面-->
+			<!--化学成分页面的组件-->
+			<my-chemical ref="childChemical" v-on:childvalue="childByValue"></my-chemical>
+			<!--单方精油的组件-->
+			<my-essentialoil ref="essentialoilname" v-on:essentialoilvalue="essentialOilByValue"></my-essentialoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-17
+            	描述：用途组件
+            -->
+			<condition-master ref="conmaster" v-on:entervalue="enterByValue"></condition-master>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-19
+            	描述：疗愈属性组件
+            -->
+			<my-attributes ref="abilitymaster" v-on:abilitymastervalue="abilitymasterByValue"></my-attributes>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-21
+            	描述：复方精油组件
+            -->
+			<my-multipleoil ref="multipleoilname" v-on:multiplenamevalue="multipleNameByValue"></my-multipleoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-28
+            	描述：其他关键词Master组件
+            -->
+			<my_other_keword ref="otherkeyword" v-on:otherkeywordvalue="otherKeywordByValue"> </my_other_keword>
+		</el-dialog>
+		<script type="text/javascript" src="../static/ueditor/ueditor.config.js"></script>
+		<!-- 编辑器源码文件 -->
+		<script type="text/javascript" src="../static/ueditor/ueditor.all.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="../static/ueditor/lang/zh-cn/zh-cn.js"></script>
+		<script type="text/javascript" src="../static/ueditor/ueditor.parse.js"></script>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/cropper.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script type="text/javascript" src="../scripts/ueditor.js"></script>
+	</body>
+
+</html>

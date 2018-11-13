@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>科学实证Master一览</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+
+	<body>
+		<div id="scienceMaster">
+			<el-row class="tac">
+				<el-col :span="24" v-cloak>
+					<div class="grid-content bg-purple-light">
+						<el-cascader :options="searchOptions" v-model="selectsearchOptionId" :props="props" separator="/" clearable change-on-select filterable placeholder="输入关键词类别"></el-cascader>
+						<el-tooltip class="item" effect="dark" content="输入【中文标题、英文标题、结论、概要】中的部分内容进行模糊查询">
+							<el-input v-model="keyword" placeholder="请输入" style="width: 300px;" @keyup.enter.native="query"></el-input>
+						</el-tooltip>
+						<el-button type="primary" v-on:click="query">查询</el-button>
+						<el-button type="primary" id="add" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row class="tac">
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表页面-->
+						<el-table style="width: 100%;" height="750px" border :data="dataTableSource" :default-sort="{prop: 'date', order: 'descending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="informationId" sortable fixed label="论文ID">
+							</el-table-column>
+							<el-table-column prop="titleChinese" sortable label="中文标题">
+							</el-table-column>
+							<el-table-column prop="titleEnglish" sortable label="英文标题">
+							</el-table-column>
+							<el-table-column prop="pubDay" sortable label="出版年月">
+							</el-table-column>
+							<el-table-column prop="conclusions" sortable label="结论">
+							</el-table-column>
+							<el-table-column prop="keywordChineseNames" sortable label="关联的关键词">
+							</el-table-column>
+							<el-table-column label="操作" width="150">
+								<template scope="scope">
+									<el-button size="small" @click="editRow(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+
+			<!--分页的工具-->
+			<el-col :span="24" fixed class="scienceAdmin">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+
+		<!--编辑页面/添加页面-->
+		<el-dialog :title="statusName" width="70%" :visible.sync="getEditVisible" :close-on-click-modal="false" @close="closeDialog1('data')" id="dialogEdit" v-cloak>
+			<el-form label-width="formLabelWidth" :rules="editFormRules" ref="data" :model="data">
+				<el-form-item label="实证研究论文信息ID" :label-width="formLabelWidth">
+					<el-input v-model="data.informationId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="信息链接地址" prop="url" :label-width="formLabelWidth">
+					<el-input v-model="data.url"></el-input>
+				</el-form-item>
+				<el-form-item label="数字对象唯一标识符" :label-width="formLabelWidth" style="color: #a8a9ab;">
+					<el-input v-model="data.doi"></el-input>
+				</el-form-item>
+				<el-form-item label="中文标题" prop="titleChinese" :label-width="formLabelWidth">
+					<el-input v-model="data.titleChinese"></el-input>
+				</el-form-item>
+				<el-form-item label="英文标题" prop="titleEnglish" :label-width="formLabelWidth">
+					<el-input v-model="data.titleEnglish"></el-input>
+				</el-form-item>
+				<el-form-item label="文章作者" prop="author" :label-width="formLabelWidth" style="color: #a8a9ab;">
+					<el-input v-model="data.author"></el-input>
+				</el-form-item>
+				<el-form-item label="作者所在机构" :label-width="formLabelWidth">
+					<el-input v-model="data.authorOrg"></el-input>
+				</el-form-item>
+				<el-form-item label="文章源自出版物的名称" :label-width="formLabelWidth">
+					<el-input v-model="data.publication"></el-input>
+				</el-form-item>
+				<el-form-item label="出版年月" :label-width="formLabelWidth">
+					<el-input v-model="data.pubDay"></el-input>
+				</el-form-item>
+				<el-form-item label="结论" :label-width="formLabelWidth">
+					<el-input type="textarea" autosize v-model="data.conclusions"></el-input>
+				</el-form-item>
+				<el-form-item label="论文概要" :label-width="formLabelWidth">
+					<el-input type="textarea" autosize v-model="data.summary"></el-input>
+				</el-form-item>
+				<el-form-item label="关键字" :label-width="formLabelWidth">
+					<el-select placeholder="请选择" :data="selecteditOne" v-model="data.selectKeywordObj">
+						<el-option v-for="(item,index) in selecteditOne" v-model="item.keywordTypeId" :key="item.keywordTypeId" :label="item.keywordTypeName" :value="item.keywordTypeId">
+						</el-option>
+					</el-select>
+					<el-button type="primary" icon="el-icon-plus" @click="addInput(selecteditOne[data.selectKeywordObj-1])"></el-button>
+				</el-form-item>
+				<el-form-item v-for="(item,index) in addSelect" :label="item.keywordTypeName" :label-width="'270px'">
+					<el-input placeholder="请选择内容" v-model="item.keywordChineseName" :disabled="true" style="width:200px;"></el-input>
+					<template v-if="item.keywordChineseName==null||item.keywordChineseName==''">
+						<el-button size="small" @click="chooseadd(item.keywordTypeId)" icon="el-icon-tickets" style="height:40px;">请选择</el-button>
+					</template>
+					<el-button type="primary" icon="el-icon-minus" @click="removeInput(index)"></el-button>
+				</el-form-item>
+				<el-form-item label="创建时间" :label-width="formLabelWidth">
+					<el-input :disabled="true" v-model="data.gmtCreate"></el-input>
+				</el-form-item>
+				<el-form-item label="修改的时间" :label-width="formLabelWidth">
+					<el-input :disabled="true" v-model="data.gmtModified"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf1('data')">取消</el-button>
+				<el-button type="primary" @click="submit('data')">提交</el-button>
+			</div>
+			<!--引用组件的页面-->
+			<!--化学成分页面的组件-->
+			<my-chemical ref="childChemical" v-on:childvalue="childByValue"></my-chemical>
+			<!--单方精油的组件-->
+			<my-essentialoil ref="essentialoilname" v-on:essentialoilvalue="essentialOilByValue"></my-essentialoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-17
+            	描述：用途组件
+            -->
+			<condition-master ref="conmaster" v-on:entervalue="enterByValue"></condition-master>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-19
+            	描述：疗愈属性组件
+            -->
+			<my-attributes ref="abilitymaster" v-on:abilitymastervalue="abilitymasterByValue"></my-attributes>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-21
+            	描述：复方精油组件
+            -->
+			<my-multipleoil ref="multipleoilname" v-on:multiplenamevalue="multipleNameByValue"></my-multipleoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-28
+            	描述：其他关键词Master组件
+            -->
+			<my_other_keword ref="otherkeyword" v-on:otherkeywordvalue="otherKeywordByValue"> </my_other_keword>
+		</el-dialog>
+
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/scientificEvidence.js"></script>
+	</body>
+
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>疗愈属性Mater</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+			
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+
+	<body>
+		<div id="HealingAbilityMaster">
+			<el-header>
+				<el-row>
+					<el-col :span="24" v-cloak>
+						<div class="grid-content bg-purple-light">
+							<el-col :span="4">
+								<el-form label-width="30px">
+									<el-form-item>
+										<el-radio-group v-model="physicalMindFlg" size="medium">
+											<el-radio-button label="1">生理</el-radio-button>
+											<el-radio-button label="2">心理</el-radio-button>
+										</el-radio-group>
+										<el-form-item>
+								</el-form>
+							</el-col>
+							<el-col :span="4">
+								<el-input v-model="keyword" placeholder="请输入关键字"  @keyup.enter.native="query()"></el-input>
+							</el-col>
+							<el-col :span="4">
+								<el-button type="primary" v-on:click="query()">查询</el-button>
+								<el-button type="primary" @click="add()">新增</el-button>
+							</el-col>
+						</div>
+					</el-col>
+				</el-row>
+			</el-header>
+			<el-row>
+				<el-col :span="24">
+					<span class="grid-content" bg-purple-light>
+					<el-table style="width: 100%" :max-height="contentHeight" class="tb-edit":default-sort="{prop: 'id', order: 'ascending'}" border :data="dataTableSource" :header-cell-style="{background:'#eceff5'}" center>
+						<el-table-column type="index" 			 label="序号"></el-table-column>
+						<el-table-column prop="id" 	  			 label="疗愈属性id"></el-table-column>
+						<el-table-column prop="physicalMindFlg"  label="属性标志"  :formatter="formatRole"></el-table-column>
+						<el-table-column prop="chineseName" 	 label="中文名"></el-table-column>
+						<el-table-column prop="englishName" 	 label="英文名"></el-table-column>
+						<el-table-column prop="chineseOtherName" label="中文别名"></el-table-column>
+						<el-table-column prop="englishOtherName" label="英文别名"></el-table-column>
+						<el-table-column prop="description" 	 label="描述"></el-table-column>
+						<el-table-column label="操作" width="150">
+						  <template slot-scope="scope">
+								<el-button type="primary"size="small" @click="editrow(scope.$index,scope.row)"   >编辑</el-button>
+								<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+						  </template>
+						</el-table-column>
+					</el-table>
+					</span>
+				</el-col>
+			</el-row>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" width="60%" id="dialogEdit" @close="callOf('data')" v-cloak>
+			<el-form label-width="80px">
+				<el-form-item label="生理&心理属性标志" :label-width="formLabelWidth">
+					<el-radio-group v-model="data.physicalMindFlg" size="medium">
+						<el-radio-button label="1">生理</el-radio-button>
+						<el-radio-button label="2">心理</el-radio-button>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="疗愈属性中文名" :label-width="formLabelWidth">
+					<el-input v-model="data.chineseName" maxlength="45"></el-input>
+				</el-form-item>
+				<el-form-item label="疗愈属性中文别名" :label-width="formLabelWidth">
+					<el-tag :key="tag" v-for="tag in dynamicTags1" closable :disable-transitions="false" @close="handleClose1(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput1">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="英文名" :label-width="formLabelWidth">
+					<el-input v-model="data.englishName" maxlength="100"></el-input>
+				</el-form-item>
+				<el-form-item label="英文别名" :label-width="formLabelWidth">
+					<el-tag :key="tag" v-for="tag in dynamicTags2" closable :disable-transitions="false" @close="handleClose2(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible2" v-model="inputValue2" ref="saveTagInput2" size="small" @keyup.enter.native="handleInputConfirm2" @blur="handleInputConfirm2"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput2">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="疗愈属性描述" :label-width="formLabelWidth">
+					<el-input type="textarea" autosize v-model="data.description"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/Healing_abilityMaster.js"></script>
+
+	</body>
+
+</html>

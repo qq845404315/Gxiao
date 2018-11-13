@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>化学成分新增</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+
+	</head>
+
+	<body>
+		<div id="chemicalAdmin">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light" v-cloak>
+						<el-button type="primary" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表-->
+						<el-table style="width: 100%;" max-height="750" border :data="dataTableSource" :default-sort="{prop: 'index', order: 'descending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column type="index"label="序号" fixed>
+							</el-table-column>
+							<el-table-column prop="constituentId" label="化学成分ID" sortable>
+							</el-table-column>
+							<el-table-column prop="constituentCnName" label="中文名" sortable>
+							</el-table-column>
+							<el-table-column prop="constituentEnName" label="英文名" sortable>
+							</el-table-column>
+							<el-table-column prop="parentNameSecond" label="二级父分类" sortable>
+							</el-table-column>
+							<el-table-column prop="percentLow" label="占精油百分比-最低" sortable>
+							</el-table-column>
+							<el-table-column prop="percentHigh" label="占精油百分比-最高" sortable>
+							</el-table-column>
+							<!-- 	<el-table-column prop="description" label="备注及补充说明" min-width="160">
+							</el-table-column> -->
+							<el-table-column label="操作" v-cloak>
+								<template scope="scope">
+									<el-button size="small" @click="getEdit(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+
+		<!--编辑页面-->
+		<el-dialog title="化学成份-编辑"  width="90%" :visible.sync="getEditVisible" :close-on-click-modal="false" id="dialogEdit" @close="closeDialog1('editForm')">
+			<el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
+				<el-form-item label="化学成分ID" prop="constituentId" :label-width="formLabelWidth">
+					<el-input v-model="editForm.constituentId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="中文名" prop="constituentCnName" :label-width="formLabelWidth">
+					<el-input v-model="editForm.constituentCnName" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="英文名" prop="constituentEnName" :label-width="formLabelWidth">
+					<el-input v-model="editForm.constituentEnName" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="占精油百分比-最低" prop="percentLow" :label-width="formLabelWidth">
+					<el-input v-model="editForm.percentLow"></el-input>
+				</el-form-item>
+				<el-form-item label="占精油百分比-最高" prop="percentHigh" :label-width="formLabelWidth">
+					<el-input v-model="editForm.percentHigh"></el-input>
+				</el-form-item>
+				<el-form-item label="备注及补充说明" :label-width="formLabelWidth">
+					<el-input type="textarea" v-model="editForm.description"></el-input>
+				</el-form-item>
+				<el-form-item label="创建时间" :label-width="formLabelWidth">
+					<el-input v-model="editForm.gmtCreate" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="修改时间" :label-width="formLabelWidth">
+					<el-input v-model="editForm.gmtModified" :disabled="true"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer" v-cloak>
+				<el-button @click="callOf1('editForm')">取消</el-button>
+				<el-button type="primary" @click="editSubmit('editForm')">提交</el-button>
+			</div>
+		</el-dialog>
+		<!--新增页面-->
+		<el-dialog title="化学成份-新增" width="90%" :visible.sync="getAddVisible" :close-on-click-modal="false" id="dialogAdd" @close="closeDialog('addForm')">
+			<div>
+				<el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
+					<el-form-item label="精油化学成分ID" prop="constituentId" :label-width="formLabelWidth" :inline="true" v-cloak>
+						<el-input v-model="addForm.constituentId" :disabled="true" style="width: 30%;"></el-input>
+						<el-button type="primary" @click="chemicalMaster()">选择</el-button>
+					</el-form-item>
+					<el-form-item label="中文名" :label-width="formLabelWidth" prop="constituentCnName">
+						<el-input :disabled="true" v-model="addForm.constituentCnName"></el-input>
+					</el-form-item>
+					<el-form-item label="英文名" prop="constituentEnName" :label-width="formLabelWidth">
+						<el-input :disabled="true" v-model="addForm.constituentEnName"></el-input>
+					</el-form-item>
+					<el-form-item label="占精油百分比-最低" prop="percentLow" :label-width="formLabelWidth">
+						<el-input v-model="addForm.percentLow"></el-input>
+					</el-form-item>
+					<el-form-item label="占精油百分比-最高" prop="percentHigh" :label-width="formLabelWidth">
+						<el-input v-model="addForm.percentHigh"></el-input>
+					</el-form-item>
+					<el-form-item label="备注及补充说明" :label-width="formLabelWidth">
+						<el-input type="textarea" v-model="addForm.description"></el-input>
+					</el-form-item>
+				</el-form>
+				<div slot="footer" class="dialog-footer" v-cloak>
+					<el-button @click="callOf('addForm')">取消</el-button>
+					<el-button type="primary" @click.native="addSubmit('addForm')">提交</el-button>
+				</div>
+			</div>
+			<my-chemical ref="childChemical" v-on:childvalue="childByValue"></my-chemical>
+		</el-dialog>
+		<script src="../scripts/vue.js"></script>
+		<script type="text/javascript" src="../scripts/vee-validate.js"></script>
+		<script type="text/javascript" src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script type="text/javascript" src="../scripts/main.js"></script>
+		<script type="text/javascript" src="../scripts/chemical.js"></script>
+	</body>
+
+</html>

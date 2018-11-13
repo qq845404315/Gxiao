@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>用途Master</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+	<style>
+		.el-tag+.el-tag {
+			margin-left: 10px;
+		}
+		
+		.button-new-tag {
+			margin-left: 10px;
+			height: 32px;
+			line-height: 30px;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+		
+		.input-new-tag {
+			vertical-align: bottom;
+		}
+		
+		.box-card {
+			width: 100%;
+		}
+		
+		[v-cloak] {
+			display: none;
+			!important;
+		}
+	</style>
+
+	<body>
+		<div id="conditionMaster">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-form label-width="20px">
+							<el-form-item v-cloak>
+								<el-col :span="4">
+									<!--
+                                    	作者：guxiao
+                                    	时间：2018-08-30
+                                    	描述：根据性别进行查询
+                                         -->
+									<el-tooltip class="item" effect="dark" content="请选择性别">
+										<el-select clearable placeholder="请选择性别" v-model="typeSex">
+											<el-option v-for="item in options" v-model="item.id" :key="item.typeSex" :label="item.label" :value="item.typeSex">
+											</el-option>
+										</el-select>
+									</el-tooltip>
+								</el-col>
+								<el-col :span="4">
+									<!--
+                                    	作者：guxiao
+                                    	时间：2018-08-29
+                                    	描述：根据年龄层查询
+                                   -->
+									<el-tooltip class="item" effect="dark" content="请选择年龄层">
+										<el-select clearable placeholder="请选择年龄层" :data="ageselectedit" v-model="typeAgeGroup">
+											<el-option v-for="item in ageselectedit" v-model="item.subId" :key="item.typeAgeGroup" :label="item.subName" :value="item.typeAgeGroup">
+											</el-option>
+										</el-select>
+									</el-tooltip>
+								</el-col>
+								<el-col :span="4">
+									<!--
+                                    	作者：guxiao
+                                    	时间：2018-08-29
+                                    	描述：根据基本种类查询
+                                    -->
+									<el-tooltip class="item" effect="dark" content="请选择基本种类">
+										<el-select clearable placeholder="请选择基本种类" :data="basekindselect" v-model="typeBaseKind">
+											<el-option v-for="item in basekindselect" v-model="item.id" :key="item.typeBaseKind" :label="item.chineseName" :value="item.typeBaseKind">
+											</el-option>
+										</el-select>
+									</el-tooltip>
+								</el-col>
+								<el-col :span="4">
+									<!--
+                                    	作者：guxiao
+                                    	时间：2018-08-29
+                                    	描述：根据身体系统查询
+                                    -->
+									<el-tooltip class="item" effect="dark" content="请选择身体系统">
+										<el-select clearable placeholder="请选择身体系统" :data="typebodysystemselect" v-model="typeBodySystem">
+											<el-option v-for="item in typebodysystemselect" v-model="item.id" :key="item.typeBodySystem" :label="item.chineseName" :value="item.typeBodySystem">
+											</el-option>
+										</el-select>
+									</el-tooltip>
+								</el-col>
+							</el-form-item>
+							<el-form-item v-cloak>
+								<!--
+                            	作者：guxiao
+                            	时间：2018-08-30
+                            	描述：查询的三级联动
+                            -->
+								<el-col :span="6">
+									<el-tooltip class="item" effect="dark" content="请选择身体器官">
+										<el-cascader placeholder="请选择身体器官" :options="searchOptions" v-model="selectsearchOptionId" :props="props" separator="/" clearable change-on-select filterable placeholder="请选择" style="width: 270px;"></el-cascader>
+									</el-tooltip>
+								</el-col>
+								<el-col :span="4">
+									<el-input v-model="keyword" placeholder="请输入用途关键字" @keyup.enter.native="query()"></el-input>
+								</el-col>
+								<!--  <el-col :span="1">&nbsp;</el-col>-->
+								<el-col :span="4">
+									<el-button type="primary" icon="el-icon-search" @click="query()"></el-button>
+									<el-button type="primary" icon="el-icon-plus" @click="add()"></el-button>
+								</el-col>
+							</el-form-item>
+						</el-form>
+					</div>
+				</el-col>
+			</el-row>
+
+			<el-row>
+				<el-col :span="24">
+					<span class="grid-content" bg-purple-light>
+						
+						<!--
+                        	作者：guxiao
+                        	时间：2018-08-29
+                        	描述：用途master列表页
+                        -->
+						<el-table style="width: 100%" 
+							:max-height="contentHeight"
+							class="tb-edit"
+							:default-sort="{prop: 'conditionId', order: 'ascending'}" 
+							border 
+							:data="dataTableSource" 
+							:header-cell-style="{background:'#eceff5'}" center>
+						<!--
+                        	作者：guxiao
+                        	时间：2018-08-29
+                        	描述：@row-click="handleCurrentChange"
+                        -->
+							<el-table-column type="index" label="序号" width="50"></el-table-column>
+							<el-table-column prop="conditionId" label="用途ID" width="90" sortable></el-table-column>
+							<el-table-column label="父用途">
+								 <template slot-scope='scope'>
+									 <el-button type="text" size="mini" @click="editRow(scope.row.parentHealthCondition.conditionId)" v-if="scope.row.parentHealthCondition != null">
+									 	{{scope.row.parentHealthCondition.conditionCnName}}
+									 </el-button>							    
+								 </template>
+							</el-table-column>
+							<el-table-column label="参照用途">
+								<template scope="scope">
+								  <el-button type="text" size="mini" v-for='v in scope.row.referenceHealthConditionList'><a @click="editRow(v.conditionId)">{{v.conditionCnName}}</a></el-button>
+								 </template>
+							</el-table-column>
+							<el-table-column prop="conditionCnName"  label="中文名" sortable></el-table-column>
+							<el-table-column prop="conditionCnOtherName"  label="中文别名" sortable></el-table-column>
+							<el-table-column prop="conditionEnName"  label="英文名" sortable></el-table-column>
+							<el-table-column prop="conditionEnOtherName"  label="英文别名" sortable></el-table-column>
+							<el-table-column prop="typeSex"  label="性别" width="75" :formatter="formatRole"  sortable></el-table-column>
+							<el-table-column prop="typeAgeGroupStr"  label="年龄层说明"  sortable></el-table-column>
+							<el-table-column prop="typeBodySystemStr"  label="身体系统名称"  sortable></el-table-column>
+							<el-table-column prop="typeOrganStr"  label="器官名称" sortable></el-table-column>
+							<el-table-column prop="typeBaseKindStr"  label="基本用途" sortable> </el-table-column>
+							<el-table-column label="操作" width="150">
+								<template scope="scope">
+									
+									<el-button type="primary" size="mini" @click="editRow(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="mini" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+
+								</template>
+							</el-table-column>
+						</el-table>
+					</span>
+				</el-col>
+			</el-row>
+		</div>
+		<!--
+        	作者：guxiao
+        	时间：2018-08-30
+        	描述：编辑和添加界面
+     -->
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" width="70%" id="dialogEdit" v-cloak>
+			<el-form label-width="80px">
+				<el-form-item label="用途ID" :label-width="formLabelWidth">
+					<el-input v-model="data.conditionId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="父用途" :label-width="formLabelWidth">
+					<el-input v-model="parentName" placeholder="请选择父用途ID" :disabled="true" style="width: 250px;">
+						<el-button slot="append" icon="el-icon-tickets" @click="fatheruseadd()">请选择</el-button>
+					</el-input>
+					<el-button icon="el-icon-refresh" @click="refreshparent()">清除父用途</el-button>
+				</el-form-item>
+				<el-form-item label="参照用途" :label-width="formLabelWidth">
+					<el-tag :key="tag" v-for="tag in dynamicTags" closable @close="handleClose(tag)">{{tag.conditionCnName}}</el-tag>
+					<el-button size="small" @click="chooseadd()" icon="el-icon-tickets">请选择</el-button>
+				</el-form-item>
+				<el-form-item label="中文名" :label-width="formLabelWidth">
+					<el-input v-model="data.conditionCnName" maxlength="45"></el-input>
+				</el-form-item>
+				<el-form-item label="中文别名" :label-width="formLabelWidth">
+					<!--<el-input v-model="data.conditionCnOtherName" maxlength="100"></el-input>-->
+					<el-tag :key="tag" v-for="tag in dynamicTags1" closable :disable-transitions="false" @close="handleClose1(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1">
+					</el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput1">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="英文名" :label-width="formLabelWidth">
+					<el-input v-model="data.conditionEnName" maxlength="100"></el-input>
+				</el-form-item>
+				<el-form-item label="英文别名" :label-width="formLabelWidth">
+					<!--<el-input v-model="data.conditionEnOtherName" maxlength="100"></el-input>-->
+					<el-tag :key="tag" v-for="tag in dynamicTags2" closable :disable-transitions="false" @close="handleClose2(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible2" v-model="inputValue2" ref="saveTagInput2" size="small" @keyup.enter.native="handleInputConfirm2" @blur="handleInputConfirm2">
+					</el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput2">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="描述" :label-width="formLabelWidth">
+					<el-input type="textarea" autosize v-model="data.description"></el-input>
+				</el-form-item>
+				<el-form-item label="性别" :label-width="formLabelWidth">
+					<el-select clearable placeholder="请选择" v-model="data.typeSex">
+						<el-option v-for="item in options" v-model="item.id" :key="item.typeSex" :label="item.label" :value="item.typeSex"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="年龄层" :label-width="formLabelWidth">
+					<el-select clearable placeholder="请选择" :data="ageselectedit" v-model="data.typeAgeGroup">
+						<el-option v-for="item in ageselectedit" v-model="item.subId" :key="item.typeAgeGroup" :label="item.subName" :value="item.typeAgeGroup"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="基本种类" :label-width="formLabelWidth">
+					<el-select clearable placeholder="请选择" :data="basekindselect" v-model="data.typeBaseKind">
+						<el-option v-for="item in basekindselect" v-model="item.id" :key="item.typeBaseKind" :label="item.chineseName" :value="item.typeBaseKind"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="身体系统" :label-width="formLabelWidth">
+					<el-select clearable placeholder="请选择" :data="typebodysystemselect" v-model="data.typeBodySystem">
+						<el-option v-for="item in typebodysystemselect" v-model="item.id" :key="item.typeBodySystem" :label="item.chineseName" :value="item.typeBodySystem"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item :label-width="'120px'">
+					<el-card class="box-card">
+						<div slot="header" class="clearfix">
+							<span>选择器官</span>
+						</div>
+						<div>
+							<el-select clearable placeholder="请选择" :data="typeorganbodysystemselect" v-model="data.typeOrganBodySystem" @change="typeorganbodysystemselectChange()">
+								<el-option v-for="item in typeorganbodysystemselect" v-model="item.id" :key="item.typeOrganBodySystem" :label="item.chineseName" :value="item.typeOrganBodySystem">
+								</el-option>
+							</el-select>
+							<el-select clearable placeholder="请选择" :data="typeorganparentselect" v-model="data.typeOrganParent" @change="typeorganparentelectChange()">
+								<el-option v-for="item in typeorganparentselect" v-model="item.id" :key="item.typeOrganParent" :label="item.organName" :value="item.typeOrganParent">
+								</el-option>
+							</el-select>
+							<el-select clearable placeholder="请选择" :data="typeorganselect" v-model="data.typeOrgan">
+								<el-option v-for="item in typeorganselect" v-model="item.id" :key="item.typeOrgan" :label="item.organName" :value="item.typeOrgan">
+								</el-option>
+							</el-select>
+						</div>
+					</el-card>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+			<condition-master ref="conmaster" v-on:entervalue="enterByValue"></condition-master>
+		</el-dialog>
+
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/conditionMaster.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+
+	</body>
+
+</html>

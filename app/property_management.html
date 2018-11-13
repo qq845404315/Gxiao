@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>权限管理</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<style>
+			.custom-tree-node {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				font-size: 18px;
+				padding-right: 8px;
+			}
+			
+			.el-tree-node__content {
+				background-color: #eceff5;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="PropertyManagement">
+			<el-row>
+				<el-col :span="24">
+					<el-col :span="24">
+						<p style="font-size: 20px;"><b>权限菜单</b></p>
+					</el-col>
+					<div class="grid-content bg-purple-light">
+						<el-col :span="8">
+							<div class="block" style="width: 80%;">
+								<p style="background-color: #81B0E0; margin-bottom: 3px; margin-top: 0px; font-size: 21px;"><b>权限菜单列表</b>
+									<el-button type="warning" icon="el-icon-plus" size="mini" circle @click="add()"> </el-button>
+								</p>
+								<el-tree :data="data"  :props="defaultProps"  check-on-click-node show-checkbox  ref="tree" node-key="id" @check-change="checkchange" @node-click="handleNodeClick" :expand-on-click-node="false" check-strictly > 
+									<span class="custom-tree-node" slot-scope="{ node, data }">
+        						<span  style="display: block;">{{ node.label }}</span>
+									<span v-if="data.aclStatus==0" style="background-color: #FB0707; font-size: 12px; color: #FFFFFF;">禁用</span>
+									<span v-else="data.aclStatus==1" style="background-color: #82af6f; font-size: 12px; color: #FFFFFF;">有效</span>
+									<span>
+										<div>
+											<el-button class="el-icon-edit"  size="mini" @click="editnode(data)"></el-button>
+											<el-button class="el-icon-delete"  size="mini" @click="deletenode(data)"></el-button>
+										</div>
+	        						</span>
+									</span>
+								</el-tree>
+							</div>
+						</el-col>
+						<el-col :span="15">
+							<el-table :data="tableData" style="width: 100%" :header-cell-style="{background:'#eceff5'}">
+								<el-table-column label="底层权限列表" :render-header="renderProductId">
+									<el-table-column prop="aclName" label="底层权限名称"></el-table-column>
+									<el-table-column prop="description" label="备注"></el-table-column>
+									<el-table-column prop="aclStatus" label="状态" width="60">
+										<template scope="scope">
+											<span v-if="scope.row.aclStatus==0" style="background-color: #FB0707; font-size: 12px; color: #FFFFFF;">禁用</span>
+											<span v-else="scope.row.aclStatus==1" style="background-color: #82af6f; font-size: 12px;  color: #FFFFFF;">有效</span>
+										</template>
+									</el-table-column>
+									<el-table-column label="操作" width="140px">
+										<template scope="scope">
+											<el-button type="primary" size="small" icon="el-icon-edit" @click="editRow(scope.$index, scope.row)"></el-button>
+											<el-button type="danger" size="small" icon="el-icon-delete" @click="deleteRow(scope.$index, scope.row)"></el-button>
+										</template>
+									</el-table-column>
+								</el-table-column>
+							</el-table>
+						</el-col>
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" id="dialogEdit" @close="offdialog()" v-cloak>
+			<el-form>
+				<el-form-item label="上级权限菜单">
+					<el-cascader placeholder="请选择" :options="menuList" v-model="data.parentIds" :props="props" clearable change-on-select filterable :show-all-levels="false"></el-cascader>
+				</el-form-item>
+				<el-form-item label="权限点名称">
+					<el-input v-model="data.aclName"></el-input>
+				</el-form-item>
+				<el-form-item  label="URL">
+					<template v-if="status==3||status==4">
+						<el-tag :key="tag" v-for="tag in dynamicTags1" closable :disable-transitions="false" @close="handleClose1(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput1">+ URL</el-button>
+					</template>
+					<template v-else="status==1||status==2">
+					<el-input  v-model="data.url"></el-input>
+					</template>
+				</el-form-item>
+				<el-form-item label="状态">
+					<el-switch v-model="data.aclStatus" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+				</el-form-item>
+				<el-form-item label="备注">
+					<el-input type="textarea" v-model="data.description"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf()">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/property_management.js"></script>
+	</body>
+
+</html>

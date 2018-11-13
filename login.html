@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit|ie-comp|ie-stand">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>精油物语后台管理系统登录</title>
+		<link rel="SHORTCUT ICON" href="./image/favicon.ico" />
+		<link rel="stylesheet" href="./css/element-ui.min.css">
+		<link rel="stylesheet" href="./css/login.css" />
+		<style>
+			input:-webkit-autofill {
+				-webkit-box-shadow: 0 0 0px 100px white inset !important;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="app" class="login_block">
+			<div class="login">
+				<div class="message">精油物语后台管理系统<span>V1.0</span></div>
+				<div id="darkbannerwrap"></div>
+				<el-form :model="ruleForm2" :rules="rules2" ref="ruleForm2" label-position="left" label-width="0px">
+					<i class="fa fa-user fa-lg id_ico"></i>
+					<el-form-item prop="username">
+						<el-input type="text" v-model="ruleForm2.username" auto-complete="off" id="username" name="username" placeholder="用户名">
+						</el-input>
+					</el-form-item>
+					<el-form-item prop="password">
+						<i class="fa fa-keyboard-o fa-lg pw_ico"></i>
+						<el-input type="password" v-model="ruleForm2.password" auto-complete="off" id="password" name="password" placeholder="密码" @keyup.enter.native="handleSubmit2">
+						</el-input>
+					</el-form-item>
+					<el-form-item style="width:100%;">
+						<el-button type="primary" @click.native.prevent="handleSubmit2" :loading="logining" id="Btn_Login" class="button_login" name="Btn_Login">登录</el-button>
+						<!--<el-button @click.native.prevent="handleReset2">重置</el-button>-->
+						<div class="topic">
+							<div id="err_msg_panel">
+
+							</div>
+						</div>
+
+					</el-form-item>
+				</el-form>
+			</div>
+			<div class="copyright">版权所有 &copy; 2005-2025 原心科技 </div>
+		</div>
+		<script src="./scripts/vue.min.js"></script>
+		<script src="./scripts/element-ui.min.js"></script>
+		<script src="./scripts/jquery-2.1.4.js"></script>
+		<script src="./scripts/axios.min.js"></script>
+		<script src="./scripts/main.js"></script>
+		<script src="./scripts/zh_CN.js"></script>
+		<script src="./scripts/vee-validate.js"></script>
+		<script>
+			var app = new Vue({
+				el: '#app',
+				data: {
+					logining: false,
+					ruleForm2: {
+						username: '',
+						password: ''
+					},
+					rules2: {
+						username: [{
+								required: true,
+								message: '请输入账号',
+								trigger: 'blur'
+							},
+							//{ validator: validaePass }
+						],
+						password: [{
+								required: true,
+								message: '请输入密码',
+								trigger: 'blur'
+							},
+							//{ validator: validaePass2 }
+						]
+					},
+					checked: true
+				},
+				methods: {
+					handleReset2() {
+						this.$refs.ruleForm2.resetFields();
+					},
+					handleSubmit2(ev) {
+						var _this = this;
+						this.$refs.ruleForm2.validate((valid) => {
+							if(valid) {
+								//_this.$router.replace('/table');
+								this.logining = true;
+								//NProgress.start();
+								var params = new URLSearchParams();
+								params.append('username', this.ruleForm2.username);
+								params.append('password', this.ruleForm2.password);
+								var _self = this;
+								axios({
+										method:"post",
+										url: _self.api.login,
+										headers: {
+											'Content-Type': 'application/x-www-form-urlencoded'
+										},
+										data: params
+									})
+									.then((response) => {
+										this.logining = false;
+										//NProgress.done()
+										if(response.data.code !== '200') {
+											this.$message({
+												message: response.data.message,
+												type: 'error'
+											});
+										} else {
+											localStorage.setItem("token", response.data.data.token);
+											window.location.href = "home.html";
+
+										}
+									});
+							} else {
+								console.log('error submit!!');
+								return false;
+							}
+						});
+					}
+				}
+			})
+		</script>
+
+	</body>
+
+</html>

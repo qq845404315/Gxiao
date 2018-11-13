@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>复方精油关联单方精油一览</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<style>
+			.tb-edit .el-input {
+				display: none
+			}
+			
+			.tb-edit .current-row .el-input {
+				display: block
+			}
+			
+			.tb-edit .current-row .el-input+span {
+				display: none
+			}
+			
+			.tb-edit .el-textarea__inner {
+				display: none
+			}
+			
+			.tb-edit .current-row .el-textarea__inner {
+				display: block
+			}
+			
+			.tb-edit .current-row span {
+				display: none
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="essential_oil">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="10px">
+							<el-form-item required>
+								<el-col :span="5">
+									<el-form-item>
+										<el-input v-model="ruleForm.singleOilIdName" placeholder="请选择单方精油" :disabled="true">
+											<el-button slot="append" icon="el-icon-tickets" @click="chooseadd()"></el-button>
+										</el-input>
+									</el-form-item>
+								</el-col>
+								<el-col :span="2">
+									<el-form-item prop="importanceOrder">
+										<el-input v-model="ruleForm.importanceOrder" placeholder="请输入显示序号" :maxlength="2"></el-input>
+									</el-form-item>
+								</el-col>
+								<el-input v-model="description" placeholder="请输入补充说明" style="width: 500px;"></el-input>
+								<el-button type="primary" icon="el-icon-plus" @click="add()"></el-button>
+							</el-form-item>
+						</el-form>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<el-table style="width: 100%" class="tb-edit" :default-sort="{prop: 'importanceOrder', order: 'ascending'}" border :data="dataTableSource" :header-cell-style="{background:'#eceff5'}" highlight-current-row @row-click="handleCurrentChange">
+							<el-table-column type="index" label="序号"></el-table-column>
+							<el-table-column prop='singleOilId' label="成分单方精油ID" sortable></el-table-column>
+							<el-table-column prop="importanceOrder" label="重要性排序" sortable>
+								<template scope="scope">
+									<el-input size="small" v-model="scope.row.importanceOrder" @change="handleEdit(scope.$index, scope.row)" :maxlength="2"></el-input>
+									<span>{{scope.row.importanceOrder}}</span>
+								</template>
+							</el-table-column>
+							<el-table-column prop="oilChineseName" label="中文名" sortable></el-table-column>
+							<el-table-column prop="oilChineseOtherName" label="中文别名" sortable></el-table-column>
+							<el-table-column prop="oilEnglishName" label="英文名" sortable></el-table-column>
+							<el-table-column prop="oilEnglishOtherName" label="英文别名" sortable></el-table-column>
+							<el-table-column prop="oilBotanicalName" label="拉丁名" sortable></el-table-column>
+							<el-table-column prop="oilBotanicalOtherName" label="拉丁别名" sortable></el-table-column>
+							<el-table-column label="简介" width="300">
+								<template scope="scope">
+									<el-input type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="scope.row.description" @change="handleEdit(scope.$index, scope.row)"></el-input>
+									<span>{{scope.row.description}}</span>
+								</template>
+							</el-table-column>
+							<el-table-column label="操作">
+								<template scope="scope">
+									<el-button type="danger" icon="el-icon-delete" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<my-essentialOil ref="essentialOil" v-on:essentialOilvalue="essentialOilByValue"></my-essentialOil>
+		</div>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/essential_oil.js"></script>
+	</body>
+
+</html>

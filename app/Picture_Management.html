@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>图片管理Master</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<link rel="stylesheet" href="../css/cropper.css">
+		<style>
+			.el-dialog__body {
+				height: 800px;
+			}
+			
+			.container {
+				width: 500px;
+				height: 500px;
+				border: 1px #000;
+				float: left;
+			}
+			
+			.picturetype {
+				margin-top: 550px;
+				width: 500px;
+			}
+			
+			.pictextarea {
+				margin-top: 15px;
+			}
+			
+			.preview {
+				width: 220px;
+				height: 200px;
+				float: left;
+				border: 1px #000;
+				margin-left: 100px;
+			}
+			
+			.preview .imga {
+				margin-top: 20px;
+				border: 1px solid;
+			}
+			
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="PictureManagement" v-cloak>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-col :span="3">
+						</el-col>
+						<el-button type="primary" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表页面-->
+						<el-table style="width: 100%;" class="tb-edit" :max-height="contentHeight" highlight-current-row border :data="dataTableSource" :default-sort="{prop: 'id', order: 'ascending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="id" sortable label="图片Id">
+							</el-table-column>
+							<el-table-column sortable label="图片" width="600">
+								<template slot-scope="scope" v-if="scope.row.picturePath!=null">
+									<img :src="getimgurl(scope.row)" min-width="70" height="70" />
+								</template>
+							</el-table-column>
+							<el-table-column prop="pictureSizeTypeStr" sortable label="尺寸">
+							</el-table-column>
+							<el-table-column prop="pictureDescription" label="描述" sortable>
+							</el-table-column>
+							<el-table-column label="操作" width="220">
+								<template scope="scope">
+									<el-button type="primary" size="small" @click="handeditRow(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+									<!--<el-button @click="picupload(scope.$index, scope.row)">上传裁剪图片窗口</el-button>-->
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<template>
+				<el-dialog :visible.sync="dialogVisible" width="70%" id="picdialog" @close="cleardata">
+					<div class="container">
+						<el-input type="file" id="file" @change="picdemo(file)" :disabled="pichange"></el-input>
+						<img src="" alt="" id="img">
+					</div>
+
+					<div class="preview">
+						<p style="display: block; margin: 0px;">ShowArea：</p>
+						<img class="imga" src="" alt="" id="imga">
+					</div>
+					<div class="picturetype">
+						<span>选择图片尺寸：</span>
+						<el-select clearable :data="picdata" v-model="picType" @change="pictypechange" :disabled="editabled">
+							<el-option v-for="item in picdata" v-model="item.subId" :label="item.subName" :value="item.subId">
+							</el-option>
+						</el-select>
+						<p style="display: block; margin: 0px;">填写图片描述:</p>
+						<el-input type="textarea" class="pictextarea" v-model="pictureDescription"></el-input>
+					</div>
+					<div slot="footer" class="dialog-footer">
+						<el-button @click="resetcropper()">重置图片</el-button>
+						<el-button @click="cropperdemo()" :loading="picloading">上传图片</el-button>
+						<el-button type="primary" @click="submit()">提交</el-button>
+					</div>
+				</el-dialog>
+			</template>
+		</div>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/cropper.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/Picture_Management.js"></script>
+	</body>
+
+</html>

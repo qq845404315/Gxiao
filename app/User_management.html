@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>角色管理</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<link rel="stylesheet" href="../css/icon/iconfont.css">
+		<style>
+			.custom-tree-node {
+				flex: 1;
+				display: flex;
+				/*align-items: center;*/
+				/*justify-content: space-between;*/
+				font-size: 14px;
+				padding-right: 8px;
+			}
+			
+			.button-right {}
+		</style>
+	</head>
+
+	<body>
+		<div id="UserManagement">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-col :span="1">
+							&nbsp;
+						</el-col>
+						<el-col :span="11">
+							<el-table :data="tableData" style="width: 70%" :header-cell-style="{background:'#eceff5'}"  highlight-current-row @row-click="handleSelectionChange">
+								<el-table-column label="角色列表" :render-header="renderProductId">
+									<el-table-column prop="roleName" label="角色名称">
+										<template scope="scope">
+											<span>{{scope.row.roleName}}</span>
+										</template>
+									</el-table-column>
+									<el-table-column prop="roleStatus" label="状态">
+										<template scope="scope">
+											<span v-if="scope.row.roleStatus==0" style="background-color: #FB0707; font-size: 12px; color: #FFFFFF;">禁用</span>
+											<span v-else="scope.row.roleStatus==1" style="background-color: #82af6f; font-size: 12px;  color: #FFFFFF;">有效</span>
+										</template>
+									</el-table-column>
+									<el-table-column label="操作" width="140px">
+										<template scope="scope">
+											<el-button type="primary" size="small" icon="el-icon-edit" @click="editRow(scope.$index, scope.row)"></el-button>
+											<el-button type="danger" size="small" icon="el-icon-delete" @click="deleteRow(scope.$index, scope.row)"></el-button>
+										</template>
+									</el-table-column>
+								</el-table-column>
+							</el-table>
+						</el-col>
+						<el-col :span="12">
+							<el-tabs v-model="activeName2" type="card" @tab-click="handleClick">
+								<el-tab-pane label="角色管理与权限" name="first">
+									<el-tree ref="tree" :data="data" show-checkbox node-key="id" :expand-on-click-node="false" :default-expanded-keys="defaultExpandedKeys" :default-checked-keys="defaultCheckedKeys" :props="defaultProps">
+										<span class="custom-tree-node" slot-scope="{ node, data }">
+											<i v-if="data.aclType==1" class="gx-wenjianjia-wenjianjia"></i>
+											<i v-else="data.aclType!=1"class="el-icon-document" ></i>
+			        						<span>{{ node.label }}</span>
+										</span>
+									</el-tree>
+									<el-button type="primary" @click="addroled()">保存</el-button>
+								</el-tab-pane>
+								<el-tab-pane label="角色管理与管理员" name="second">
+									<el-transfer style="text-align: left; display: inline-block" v-model="aclmanager" :data="acldata" :titles="['待选用户列表', '已选用户列表']" :props="props" @change="aclrolechange"></el-transfer>
+								</el-tab-pane>
+							</el-tabs>
+
+						</el-col>
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" width="20%" id="dialogEdit" @close="offdialog('data')" v-cloak>
+			<el-form>
+				<el-form-item label="角色名称">
+					<el-input v-model="data.roleName"></el-input>
+				</el-form-item>
+				<el-form-item label="状态">
+					<el-switch v-model="data.roleStatus" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+				</el-form-item>
+				<el-form-item label="备注">
+					<el-input type="textarea" v-model="data.description"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/User_management.js"></script>
+	</body>
+
+</html>

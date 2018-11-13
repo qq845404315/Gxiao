@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>精油关联其他关键词</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<style>
+			.el-form-item__label {
+				padding-top: 20px;
+			}
+			
+			.el-form-item__content {
+				padding-top: 20px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="OtherKey_oil">
+
+			<el-form label-width="formLabelWidth" ref="data" :model="data">
+				<el-form-item label="关键字" :label-width="formLabelWidth">
+					<el-select placeholder="请选择" :data="selecteditOne" v-model="data.selectKeywordObj">
+						<el-option v-for="(item,index) in selecteditOne" v-model="item.keywordTypeId" :key="item.keywordTypeId" :label="item.keywordTypeName" :value="item.keywordTypeId">
+						</el-option>
+					</el-select>
+					<el-button type="primary" icon="el-icon-plus" @click="addInput(selecteditOne[data.selectKeywordObj-1])"></el-button>
+					<el-form-item v-for="(item,index) in addSelect" :label="item.keywordTypeName" :label-width="'82px'">
+						<el-input placeholder="请选择内容" v-model="item.keywordChineseName" :disabled="true" style="width:217px;"></el-input>
+						<template v-if="item.keywordChineseName==null||item.keywordChineseName==''">
+							<el-button size="small" @click="chooseadd(item.keywordTypeId)" icon="el-icon-tickets" style="height:40px;">请选择</el-button>
+						</template>
+						<el-button type="primary" icon="el-icon-minus" @click="removeInput(index)"></el-button>
+					</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button type="primary" @click="submit('data')">提交</el-button>
+			</div>
+			<!--引用组件的页面-->
+			<!--化学成分页面的组件-->
+			<my-chemical ref="childChemical" v-on:childvalue="childByValue"></my-chemical>
+			<!--单方精油的组件-->
+			<my-essentialoil ref="essentialoilname" v-on:essentialoilvalue="essentialOilByValue"></my-essentialoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-17
+            	描述：用途组件
+            -->
+			<condition-master ref="conmaster" v-on:entervalue="enterByValue"></condition-master>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-19
+            	描述：疗愈属性组件
+            -->
+			<my-attributes ref="abilitymaster" v-on:abilitymastervalue="abilitymasterByValue"></my-attributes>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-21
+            	描述：复方精油组件
+            -->
+			<my-multipleoil ref="multipleoilname" v-on:multiplenamevalue="multipleNameByValue"></my-multipleoil>
+			<!--
+            	作者：845404315@qq.com
+            	时间：2018-09-28
+            	描述：其他关键词Master组件
+            -->
+			<my_other_keword ref="otherkeyword" v-on:otherkeywordvalue="otherKeywordByValue"> </my_other_keword>
+		</div>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+
+		<script>
+			$(function() {
+				//提示的显示时间
+				var duration = '800';
+				var OtherKeyOil = new Vue({
+					el: '#OtherKey_oil',
+					data: {
+						addSelect: [],
+						selecteditOne: [],
+						formLabelWidth: "200px",
+						oilId: window.document.URL.split("=")[1],
+						data: {
+							keywordTypeId: null,
+							keywordTypeName: "",
+							selectKeywordObj: "",
+							keywordId: "",
+							keywordList: [],
+						}
+					},
+					beforeCreate: function() {
+						var _self = this;
+						axios.get(_self.api.queryAllByOilIdoilKeyword, {
+								params: {
+									oilId: window.document.URL.split("=")[1]
+								}
+							})
+							.then((response) => {
+								_self.addSelect = response.data.data;
+								axios.get(_self.api.queryAllViewKeywordMasterByKeywordType)
+									.then((response) => {
+										_self.selecteditOne = response.data.data;
+									})
+							})
+							.catch((error) => {
+								console.log(error);
+							})
+					},
+					methods: {
+						query() {
+							var _self = this;
+							axios.get(_self.api.queryAllByOilIdoilKeyword, {
+									params: {
+										oilId: _self.oilId
+									}
+								})
+								.then((response) => {
+									_self.addSelect = response.data.data;
+								})
+								.catch((error) => {
+									console.log(error);
+								})
+						},
+						childByValue: function(childValue) {
+							// childValue就是子组件传过来的值
+							var _self = this;
+							_self.chemicalValue = childValue;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: _self.chemicalValue.constituentCnName,
+								keywordId: _self.chemicalValue.constituentId,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+							//							console.log(this.addSelect)
+							// this.addSelect=_selectArray;		
+
+						},
+						essentialOilByValue: function(Value) {
+							//this. = Value;
+							var _self = this;
+							_self.chemicalValue = Value;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: _self.chemicalValue.oilChineseName,
+								keywordId: _self.chemicalValue.oilId,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+						},
+						enterByValue: function(Value) {
+							var _self = this;
+							this.chemicalValue = Value;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: this.chemicalValue.conditionCnName,
+								keywordId: this.chemicalValue.conditionId,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+						},
+						abilitymasterByValue: function(Value) {
+							var _self = this;
+							this.chemicalValue = Value;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: this.chemicalValue.chineseName,
+								keywordId: this.chemicalValue.id,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+						},
+						multipleNameByValue: function(Value) {
+							var _self = this;
+							this.chemicalValue = Value;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: this.chemicalValue.oilChineseName,
+								keywordId: this.chemicalValue.oilId,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+						},
+						otherKeywordByValue: function(Value) {
+							var _self = this;
+							this.chemicalValue = Value;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordChineseName: this.chemicalValue.chineseName,
+								keywordId: this.chemicalValue.id,
+								keywordTypeName: _self.data.keywordTypeName,
+							}
+							let _addSelect = this.addSelect
+							for(var i = 0; i < _addSelect.length; i++) {
+								if(_addSelect[i].keywordChineseName == "" || _addSelect[i].keywordId == undefined) {
+									this.addSelect.splice(i, 1);
+								}
+							}
+							this.addSelect.push(obj)
+						},
+						addInput(obj) {
+							if(obj == '' || obj == undefined) {
+								this.$message({
+									type: 'info',
+									message: '请先选择关键字的类别',
+									duration: duration
+								});
+								return false;
+							}
+							let _self = this;
+							for(var i = 0; i < _self.addSelect.length; i++) {
+								if(_self.addSelect[i].keywordChineseName == "" ||
+									_self.addSelect[i].keywordId == undefined) {
+									this.$message({
+										type: 'info',
+										message: '请先添加未选关键字',
+										duration: duration
+									});
+									return false;
+								}
+							}
+							_self.data.keywordTypeId = obj.keywordTypeId;
+							_self.data.keywordTypeName = obj.keywordTypeName;
+							var obj = {
+								keywordTypeId: _self.data.keywordTypeId,
+								keywordId: "",
+								keywordChineseName: "",
+								keywordTypeName: _self.data.keywordTypeName
+							}
+
+							_self.addSelect.push(obj);
+						},
+						removeInput(index) {
+							let _that = this;
+							_that.addSelect.splice(index, 1)
+						},
+						chooseadd(id) {
+							let _that = this;
+							if(id == 1) {
+								_that.$refs.essentialoilname.initData("单方精油的选择", true); //通过$refs找到子组件，并找到方法执行
+							}
+							if(id == 2) {
+								_that.$refs.multipleoilname.initData1("复方精油的选择", true);
+							}
+							if(id == 3) {
+								_that.$refs.abilitymaster.initData("疗愈属性的选择", true);
+							}
+							if(id == 4) {
+								_that.$refs.childChemical.initData("化学成分选择", true); //通过$refs找到子组件，并找到方法执行
+							}
+							if(id == 5) {
+								_that.$refs.conmaster.initData("用途选择", true);
+							}
+							if(id == 6) {
+								_that.$refs.otherkeyword.initData("其他关键字选择", true);
+							}
+
+						},
+						submit() {
+							var _self = this;
+							var data = {
+								oilId: _self.oilId,
+								keywordList: [],
+							}
+
+							for(var i = 0; i < _self.addSelect.length; i++) {
+								if(_self.addSelect[i].keywordId == '' || _self.addSelect[i].keywordId == undefined) {
+									_self.removeInput(i);
+								}
+								var arr = {};
+								if(_self.addSelect.length > 0 && _self.addSelect[i]) {
+									arr['keywordId'] = _self.addSelect[i].keywordId;
+									arr['keywordTypeId'] = _self.addSelect[i].keywordTypeId;
+									data.keywordList.push(arr);
+								}
+							}
+							axios.post(_self.api.editByOilIdoilKeyword, data)
+								.then(response => {
+									if(response.data.code === "200") {
+										this.$message({
+											type: 'success',
+											message: '提交成功',
+											duration: duration
+										});
+										_self.query();
+									} else {
+										this.$message({
+											type: 'error',
+											message: '提交失败!' + response.data.message
+										});
+									}
+								})
+
+						}
+					}
+				})
+			})
+		</script>
+	</body>
+
+</html>

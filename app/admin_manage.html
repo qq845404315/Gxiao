@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>管理员列表</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<style>
+			[v-cloak] {
+				display: none;!important;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="AdminManage">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-col :span="3" v-cloak>
+							<el-input v-model="keyword" placeholder="请输入关键字" @keyup.enter.native="query()"></el-input>
+						</el-col>
+						<el-col :span="4" v-cloak>
+							<el-button type="primary" v-on:click="query()">查询</el-button>
+							<el-button type="primary" @click="add()">新增</el-button>
+						</el-col>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<span class="grid-content" bg-purple-light>
+					<el-table style="width: 100%" :max-height="contentHeight" class="tb-edit":default-sort="{prop: 'index', order: 'ascending'}" border :data="dataTableSource" :header-cell-style="{background:'#eceff5'}">
+						<el-table-column type="index" 			 label="序号"></el-table-column>
+						<el-table-column prop="username" 	 label="账号"></el-table-column>
+						<el-table-column prop="realName" 	 label="真实名称"></el-table-column>
+						<el-table-column prop="mobile" label="手机号"></el-table-column>
+						<el-table-column prop="enabled" label="是否禁用" :formatter="formatRole"></el-table-column>
+						<el-table-column label="操作" v-cloak>
+						  <template slot-scope="scope">
+								<el-button type="primary"size="small" @click="editrow(scope.$index,scope.row)"   >编辑</el-button>
+								<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								<el-popover placement="top" width="160" v-model="scope.row.visible">
+									<el-input size="mini" v-model="password" placeholder="请输入新密码"></el-input>
+									<div style="text-align: right; margin: 0">
+	    								<el-button size="mini" type="text" @click="cleanpwd(scope.$index, scope.row)">取消</el-button>
+	   				 					<el-button type="primary" size="mini" @click="resetpwd(scope.$index, scope.row)">确定</el-button>
+	  								</div>
+									<el-button slot="reference" size="small">重置密码</el-button>
+								</el-popover>
+						  </template>
+						</el-table-column>
+					</el-table>
+					</span>
+				</el-col>
+			</el-row>
+			<el-col :span="24">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" width="40%" id="dialogEdit" @close="offdialog('data')" v-cloak>
+			<el-form>
+				<el-form-item label="用户名">
+					<el-input v-model="data.username"></el-input>
+				</el-form-item>
+				<el-form-item label="真实名称">
+					<el-input v-model="data.realName"></el-input>
+				</el-form-item>
+				<el-form-item label="密码" v-show="pwd">
+					<el-input v-model="data.password"></el-input>
+				</el-form-item>
+				<el-form-item label="手机号">
+					<el-input v-model="data.mobile"></el-input>
+				</el-form-item>
+				<el-form-item label="状态">
+					<el-switch v-model="data.enabled" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+				</el-form-item>
+				<el-form-item label="创建时间">
+					<el-input v-model="data.gmtCreate" disabled></el-input>
+				</el-form-item>
+				<el-form-item label="修改时间">
+					<el-input v-model="data.gmtModified" disabled></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+		</el-dialog>
+
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/admin_manage.js"></script>
+	</body>
+
+</html>

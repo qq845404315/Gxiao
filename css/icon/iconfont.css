@@ -1,0 +1,30 @@
+@font-face {
+	font-family: "font-family";
+	src: url('iconfont.eot?t=1540264997584');
+	/* IE9*/
+	src: url('iconfont.eot?t=1540264997584#iefix') format('embedded-opentype'), /* IE6-IE8 */
+	url('data:application/x-font-woff;charset=utf-8;base64,d09GRgABAAAAAASUAAsAAAAABvwAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABHU1VCAAABCAAAADMAAABCsP6z7U9TLzIAAAE8AAAARAAAAFY8uUg1Y21hcAAAAYAAAABLAAABcOdrtnNnbHlmAAABzAAAAOQAAAD4MnfxN2hlYWQAAAKwAAAALQAAADYTB63JaGhlYQAAAuAAAAAcAAAAJAfeA4NobXR4AAAC/AAAAAgAAAAICAAAAGxvY2EAAAMEAAAABgAAAAYAfAAAbWF4cAAAAwwAAAAgAAAAIAEQAF1uYW1lAAADLAAAAUgAAAJ5NuiMPHBvc3QAAAR0AAAAIAAAADRLON3geJxjYGRgYOBikGPQYWB0cfMJYeBgYGGAAJAMY05meiJQDMoDyrGAaQ4gZoOIAgCKIwNPAHicY2BkYWCcwMDKwMHUyXSGgYGhH0IzvmYwYuRgYGBiYGVmwAoC0lxTGByeOT9zZm7438AQw9zA0AAUZgTJAQDnnQxpeJxjYGBgZWBgYAZiHSBmYWBgDGFgZAABP6AoI1icmYELLM7CoARWwwISf+b8/z+MBPJZwCQDIxvDKOABkzJQHjisIJiBEQDMwAp1AHicJY9BTsJAGIXn2elMmSYVcJxGEyUzSF1UMBaK0gY8gQlb6MYNa+7ANbgBd2CP3MToFWz80bf5Xv4/+ZLHOKN4q7MNa7OETdmcsV53gClG48zcwMTDzGjh2wHuWzM8D00H9hbxZQREkC2qls45vW3yiCSF7/7gktG4RNaBkQJv+cW1aioEeaAUdrVOJ8AkreKoxFNaAMXPp+0DDw7fjth39YfwXmVYoRLenS+3XAi+1arHA2+PK72QYSgXDajzcEYivJwkekn1SOovEtWHf+HxBP6u1n4hRUM0y0CCFv8CfOUjuXicY2BkYGAAYsZna/Pi+W2+MnCzMIDA9S9bVZFpFgamJiDFwcAE4gEAJmYJjwAAAHicY2BkYGBu+N/AEMPCAAJAkpEBFTABAEcIAmsEAAAABAAAAAAAAAAAfAAAAAEAAAACAFEABAAAAAAAAgAAAAoACgAAAP8AAAAAAAB4nG2RzU7CQBSFT+XHUKILjC51NrrQpPxsTFhKAgt3LNhDmRZIO22mAwmP4PP4DD6Be3c+g1uP5cICaTM33z33nMlNBkALX/Cw+655duyhwW7HZzjHrXCF+r1wlRwI19DEs3Cd+ouwjye8CjdxhQ1v8KoNdo94E/a4w7vwGS7xIVyh/ilcJX8L13CDH+E6Wt6FsI+JdyfcxIO39gdWT52eq9lWLcPMRJlx/h7MWMfrZGoP/QEm2hbLzKhu0DloI2203d9VbOKec5GKbJaqIcc6STKV22ylQxcsnMv77XYkehBmKVcbwEJjCsc6h8IMW9YlQmQwiMrq6DtWDMZMxFgjYdqemP9XJkxYFJz8KQpdPlPnhG9Enym9x3sVfKgYPaqOfsVjmUpJQ0lr7pOQFfJytqISUg+wKFM5+mjzj478QblF+gtGfHKeeJxjYGKAAC4G7ICJkYmRmYGrPDUvKzMRhBkYACKuBEA=') format('woff'), url('iconfont.ttf?t=1540264997584') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+	url('iconfont.svg?t=1540264997584#font-family') format('svg');
+	/* iOS 4.1- */
+}
+
+.font-family {
+	font-family: "font-family" !important;
+	font-size: 16px;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+[class^="gx-wenjianjia-wenjianjia"],
+[class*=" gx-wenjianjia-wenjianjia"] {
+	font-family: "font-family" !important;
+	font-size: 16px;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.gx-wenjianjia-wenjianjia:before {
+	content: "\e643";
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>其他关键字Master</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+			
+			.addr {
+				font-size: 12px;
+				color: #b4b4b4;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+
+	<body>
+		<div id="OtherKewordMaster">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-col :span="2" v-cloak>
+							<el-input v-model="keyword" placeholder="请输入关键字" @keyup.enter.native="query()"></el-input>
+						</el-col>
+						<el-col :span="4" v-cloak>
+							<el-button type="primary" v-on:click="query()">查询</el-button>
+							<el-button type="primary" @click="add()">新增</el-button>
+						</el-col>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<span class="grid-content" bg-purple-light>
+					<el-table style="width: 100%" :height="contentHeight" class="tb-edit":default-sort="{prop: 'index', order: 'ascending'}" border :data="dataTableSource" :header-cell-style="{background:'#eceff5'}">
+						<el-table-column type="index" 			 label="序号"></el-table-column>
+						<el-table-column prop="id" 	  			 label="关键词id"></el-table-column>
+						<el-table-column prop="chineseName" 	 label="中文名"></el-table-column>
+						<el-table-column prop="englishName" 	 label="英文名"></el-table-column>
+						<el-table-column prop="chineseOtherName" label="中文别名"></el-table-column>
+						<el-table-column prop="englishOtherName" label="英文别名"></el-table-column>
+						<el-table-column label="操作" v-cloak>
+						  <template slot-scope="scope">
+								<el-button type="primary"size="small" @click="editrow(scope.$index,scope.row)"   >编辑</el-button>
+								<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+						  </template>
+						</el-table-column>
+					</el-table>
+					</span>
+				</el-col>
+			</el-row>
+			<el-col :span="24">
+				<el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange" :total="totalNumber" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</div>
+		<el-dialog :title="statusName" :visible.sync="visible" append-to-body :close-on-click-modal="false" width="60%" id="dialogEdit" @close="offdialog('data')" v-cloak>
+			<el-form label-width="80px">
+				<el-form-item label="关键词id" :label-width="formLabelWidth">
+					<el-input v-model="data.id" maxlength="5" disabled></el-input>
+				</el-form-item>
+				<el-form-item label="中文名" :label-width="formLabelWidth">
+					<el-autocomplete popper-class="my-autocomplate" v-model="data.chineseName" :fetch-suggestions="querySearchAsync" @select="handleSelect" :trigger-on-focus="false">
+						<template slot-scope="{ item }">
+							<div class="name">{{ item.chineseName }} <span class="addr">{{ item.chineseOtherName }}</span></div>
+						</template>
+					</el-autocomplete>
+				</el-form-item>
+				<el-form-item label="中文别名" :label-width="formLabelWidth">
+					<el-tag :key="tag" v-for="tag in dynamicTags1" closable :disable-transitions="false" @close="handleClose1(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput1">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="英文名" :label-width="formLabelWidth">
+					<el-autocomplete v-model="data.englishName" :fetch-suggestions="querySearchAsync2" @select="handleSelect" :trigger-on-focus="false">
+						<template slot-scope="{ item }">
+							<div class="name">{{ item.englishName }}<span class="addr">{{ item.englishOtherName }}</span></div>
+						</template>
+					</el-autocomplete>
+				</el-form-item>
+				<el-form-item label="英文别名" :label-width="formLabelWidth">
+					<el-tag :key="tag" v-for="tag in dynamicTags2" closable :disable-transitions="false" @close="handleClose2(tag)"> {{tag}}</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible2" v-model="inputValue2" ref="saveTagInput2" size="small" @keyup.enter.native="handleInputConfirm2" @blur="handleInputConfirm2"></el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput2">+ New Tag</el-button>
+				</el-form-item>
+				<el-form-item label="创建时间" :label-width="formLabelWidth">
+					<el-input v-model="data.gmtCreate" maxlength="100" disabled></el-input>
+				</el-form-item>
+				<el-form-item label="修改时间" :label-width="formLabelWidth">
+					<el-input v-model="data.gmtModified" maxlength="100" disabled></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit">提交</el-button>
+			</div>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/Other_kewordMaster.js"></script>
+	</body>
+
+</html>

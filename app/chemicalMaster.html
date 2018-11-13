@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>化学成分Master一览</title>
+		<style>
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+		</style>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+	</head>
+
+	<body>
+		<div id="chemicalMaster">
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light" v-cloak>
+						<el-cascader :options="searchOptions" v-model="selectsearchOptionId" @keyup.enter.native="doquery" :props="props" separator="/" clearable change-on-select filterable placeholder="化学成分"></el-cascader>
+						<el-input v-model="keyword" @keyup.enter.native="doquery" placeholder="输入化学成分ID、化学成分中文名或英文名" style="width: 300px;"></el-input>
+						<el-button type="primary" v-on:click="query">查询</el-button>
+						<el-button type="primary" id="add" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表页面-->
+						<el-table style="width: 100%;" height="750" border :data="dataTableSource" :default-sort="{prop: 'date', order: 'descending'}" @selection-change="changeck" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="constituentId" sortable label="化学成分ID">
+							</el-table-column>
+							<el-table-column prop="constituentCnName" sortable label="中文名">
+							</el-table-column>
+							<el-table-column prop="constituentCnOtherName" sortable label="中文别名">
+							</el-table-column>
+							<el-table-column prop="constituentEnName" sortable label="英文名">
+							</el-table-column>
+							<el-table-column prop="constituentEnOtherName" sortable label="英文别名">
+							</el-table-column>
+							<el-table-column prop="parentNameSecond" sortable label="二级父分类">
+							</el-table-column>
+							<el-table-column label="操作">
+								<template scope="scope">
+									<el-button size="small" @click="editRow(scope.$index, scope.row)">编辑</el-button>
+									<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<div>
+			</div>
+		</div>
+		<!--编辑页面/添加页面-->
+		<el-dialog :title="statusName"  width="70%" :visible.sync="getEditVisible" :close-on-click-modal="false" id="dialogEdit" @close="closeDialog('data')" v-cloak>
+			<el-form :model="data" label-width="160px" :rules="rules" ref="data">
+				<el-form-item label="化学成分ID" :label-width="formLabelWidth">
+					<el-input v-model="data.constituentId" :disabled="true"></el-input>
+				</el-form-item>
+				<el-form-item label="中文名" prop="constituentCnName" :label-width="formLabelWidth">
+					<el-input v-model="data.constituentCnName"></el-input>
+				</el-form-item>
+				<el-form-item label="中文别名">
+					<el-tag :key="tag" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="handleClosetag(tag)">
+						{{tag}}
+					</el-tag>
+					<el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+					</el-input>
+					<el-button v-else class="button-new-tag" size="small" @click="showInput">+ 请输入中文别名</el-button>
+				</el-form-item>
+				<el-form-item label="英文名" prop="constituentEnName" :label-width="formLabelWidth">
+					<el-input v-model="data.constituentEnName"></el-input>
+				</el-form-item>
+				<!-- <el-form-item label="化学成分英文别名" :label-width="formLabelWidth" style="color: #a8a9ab;">
+					<el-input v-model="data.constituentEnOtherName"></el-input>
+					多个值用“；”分割
+				</el-form-item> -->
+				<el-form-item label="英文别名">
+					<el-tag :key="tag1" v-for="tag1 in dynamicTags1" closable :disable-transitions="false" @close="handleClosetag1(tag1)">
+						{{tag1}}
+					</el-tag>
+					<el-input class="input-new-tag1" v-if="inputVisible1" v-model="inputValue1" ref="saveTagInput1" size="small" @keyup.enter.native="handleInputConfirm1" @blur="handleInputConfirm1">
+					</el-input>
+					<el-button v-else class="button-new-tag1" size="small" @click="showInput1">+ 请输入英文别名</el-button>
+				</el-form-item>
+				<el-form-item label="一级父分类" prop="parentIdFirst" :label-width="formLabelWidth">
+					<el-select placeholder="请选择" :data="selecteditOne" v-model="data.parentIdFirst" @change="selectChangeOne()" clearable>
+						<el-option v-for="item in selecteditOne" v-model="item.constituentId" :key="item.constituentId" :label="item.constituentCnName" :value="item.constituentId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="二级父分类" prop="parentIdSecond" :label-width="formLabelWidth">
+					<el-select v-model="data.parentIdSecond" placeholder="请选择" :data="selecteditTwo" @change="selectChangeTwo()" clearable>
+						<el-option v-for="items in selecteditTwo" v-model="items.constituentId" :key="items.constituentId" :label="items.constituentCnName" :value="items.constituentId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="三级父分类" :label-width="formLabelWidth">
+					<el-select v-model="data.parentIdThird" placeholder="请选择" :data="selecteditThree" clearable>
+						<el-option v-for="ite in selecteditThree" v-model="ite.constituentId" :key="ite.constituentId" :label="ite.constituentCnName" :value="ite.constituentId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="化学分子式" :label-width="formLabelWidth">
+					<el-input v-model="data.formula"></el-input>
+				</el-form-item>
+				<el-form-item prop="formulaWeight" label="分子量:" :label-width="formLabelWidth">
+					<el-input v-model="data.formulaWeight"></el-input>
+					g/ml(克/摩尔)
+				</el-form-item>
+				<el-form-item label="生理功效" :label-width="formLabelWidth">
+					<el-input v-model="data.effectPhysiology"></el-input>
+				</el-form-item>
+				<el-form-item label="生理功效补充说明" :label-width="formLabelWidth">
+					<el-input autosize type="textarea" v-model="data.effectDescription"></el-input>
+				</el-form-item>
+				<el-form-item label="情绪疗效" :label-width="formLabelWidth">
+					<el-input autosize type="textarea" v-model="data.effectMood"></el-input>
+				</el-form-item>
+				<!-- <el-form-item label="来自哪些精油：" :label-width="formLabelWidth" style="color: #a8a9ab;">
+					<el-input v-model="data.fromOil"></el-input>
+					多个值用“；”分割
+				</el-form-item> -->
+				<el-form-item label="来自哪些精油">
+					<el-tag :key="tag2" v-for="tag2 in dynamicTags2" closable :disable-transitions="false" @close="handleClosetag2(tag2)">
+						{{tag2}}
+					</el-tag>
+					<el-input class="input-new-tag2" v-if="inputVisible2" v-model="inputValue2" ref="saveTagInput2" size="small" @keyup.enter.native="handleInputConfirm2" @blur="handleInputConfirm2">
+					</el-input>
+					<el-button v-else class="button-new-tag2" size="small" @click="showInput2">+ 来自哪些精油</el-button>
+				</el-form-item>
+				<el-form-item label="气味描述" :label-width="formLabelWidth">
+					<el-input v-model="data.odorDescription"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="callOf('data')">取消</el-button>
+				<el-button type="primary" @click="submit('data')">提交</el-button>
+			</div>
+		</el-dialog>
+
+		<script src="../scripts/vue.min.js"></script>
+		<script type="text/javascript" src="../scripts/vee-validate.js"></script>
+		<script type="text/javascript" src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script type="text/javascript" src="../scripts/main.js"></script>
+		<script src="../scripts/chemicalMaster.js"></script>
+	</body>
+
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>关系Master</title>
+		<link rel="stylesheet" href="../css/element-ui.min.css">
+		<link rel="stylesheet" href="../css/cropper.css">
+		<style type="text/css">
+			[v-cloak] {
+				display: none;
+				!important;
+			}
+			
+			#picdialog .el-dialog__body {
+				height: 600px;
+			}
+			
+			.container {
+				width: 500px;
+				height: 500px;
+				border: 1px solid #000;
+				float: left;
+			}
+			
+			.preview {
+				width: 200px;
+				height: 200px;
+				float: left;
+				border: 1px #000;
+				margin-left: 100px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="RelationMaster" v-cloak>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content bg-purple-light">
+						<el-col :span="3">
+							<el-input v-model="chineseName" placeholder="请输入关系名称"></el-input>
+						</el-col>
+						<el-radio-group v-model="gender" style="text-align: center;margin-left: 10px;margin-right: 6px;">
+							<el-radio-button label="1">男</el-radio-button>
+							<el-radio-button label="2">女</el-radio-button>
+						</el-radio-group>
+						<el-button type="primary" @click="add">新增</el-button>
+					</div>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<div class="grid-content">
+						<!--列表页面-->
+						<el-table style="width: 100%;" :max-height="contentHeight" border :data="dataTableSource" :default-sort="{prop: 'id', order: 'ascending'}" :header-cell-style="{background:'#eceff5'}">
+							<el-table-column prop="id" sortable label="关系ID">
+							</el-table-column>
+							<el-table-column prop="chineseName" sortable label="关系名称">
+							</el-table-column>
+							<el-table-column prop="gender" :formatter="formatRole" sortable label="性别">
+							</el-table-column>
+							<el-table-column prop="cartoonUrl" sortable label="关联的卡通图">
+								<template slot-scope="scope" v-if="scope.row.cartoonUrl!=null">
+									<img :src="getimgurl(scope.row)" min-width="70" height="70" />
+								</template>
+							</el-table-column>
+							<el-table-column label="操作" width="220">
+								<template scope="scope">
+									<el-button type="primary" size="small" @click="handeledit(scope.$index, scope.row)">卡通图片</el-button>
+									<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+									<el-button @click="picupload(scope.$index, scope.row)">上传裁剪图片窗口</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<el-dialog :visible.sync="dialogVisible" width="80%" id="picdialog">
+				<div class="container">
+					<el-input type="file" id="file" @change="picdemo(file)"></el-input>
+					<img src="" alt="" id="img">
+				</div>
+				<div class="preview">
+					<img src="" alt="" id="imga">
+				</div>
+				<el-button @click="resetcropper()">重置图片</el-button>
+				<el-button @click="cropperdemo()">上传图片</el-button>
+			</el-dialog>
+
+		</div>
+		<el-dialog :title="statusName" :visible.sync="getEditVisible" @close="closeDialog()" :close-on-click-modal="false" id="dialogEdit" width="80%" v-cloak>
+			<el-upload :action="doUpload" ref="upload" list-type="picture-card" :on-remove="handleRemove" :auto-upload="false" :limit="1" :before-upload="beforeUpload" :on-exceed="limitfile">
+				<i class="el-icon-plus"></i>
+			</el-upload>
+			<el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+			<el-table style="width: 100%;" border :data="dataTableSource" :default-sort="{prop: 'id', order: 'ascending'}" :header-cell-style="{background:'#eceff5'}">
+				<el-table-column prop="id" sortable label="卡通图ID">
+				</el-table-column>
+				<el-table-column prop="cartoonUrl" sortable label="关联的卡通图">
+					<template slot-scope="scope" v-if="scope.row.cartoonUrl!=null">
+						<img :src="getimgurl(scope.row)" min-width="70" height="70" />
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" width="180">
+					<template scope="scope">
+						<el-button v-if="scope.row.defaultFlg!=1" type="primary" size="small" @click="defaultFlg(scope.$index, scope.row)">设为默认</el-button>
+						<el-button v-else="scope.row.defaultFlg!=0" size="small" disabled>默认图片</el-button>
+						<el-button type="danger" size="small" @click="deleteRow(scope.$index, scope.row)">删除</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+		</el-dialog>
+		<script src="../scripts/vue.min.js"></script>
+		<script src="../scripts/element-ui.min.js"></script>
+		<script src="../scripts/cropper.js"></script>
+		<script src="../scripts/jquery-2.1.4.js"></script>
+		<script src="../scripts/axios.min.js"></script>
+		<script src="../scripts/main.js"></script>
+		<script src="../scripts/zh_CN.js"></script>
+		<script src="../scripts/vee-validate.js"></script>
+		<script src="../scripts/relation_picture_Master.js"></script>
+	</body>
+
+</html>
